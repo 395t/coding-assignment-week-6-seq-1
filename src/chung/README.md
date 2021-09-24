@@ -2,10 +2,14 @@
 
 This directory contains the code for the work [Empirical Evaluation of Gated Recurrent Neural Networks on Sequence Modeling](https://arxiv.org/abs/1412.3555).
 
+All code are meant to be run from this directory (training, models) to avoid missing dependencies and other errors.
+
 ## Requirements
 * Python 3.6.13
 * PyTorch 1.9.0
 * Spacy 2.0.12
+* Scipy 1.5.2
+* Matplotlib 3.3.4
 
 ## Data Prerequisites
 ```bash
