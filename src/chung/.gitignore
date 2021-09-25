@@ -1,0 +1,6 @@
+log
+saved
+*__pycache__*
+*.ipynb_checkpoints*
+condor_run.sh
+run_set.sh

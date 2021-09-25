@@ -6,16 +6,50 @@ All code are meant to be run from this directory (training, models) to avoid mis
 
 ## Requirements
 * Python 3.6.13
-* PyTorch 1.9.0
-* Spacy 2.0.12
+* PyTorch 1.9.1
+* Spacy 3.1.3
 * Scipy 1.5.2
 * Matplotlib 3.3.4
+* TorchsummaryX 1.3.0
+* tqdm 4.62.3
 
 ## Data Prerequisites
 ```bash
 python3 -m spacy download en_core_web_sm
-python3 -m spacy download en_core_news_sm
+python3 -m spacy download de_core_news_sm
 ```
+
+You can get the dependencies and data by running `./prereq.sh`. Make sure you have Python 3.6.13 installed.
+
+## Model Training
+Here's an example training run:
+```bash
+python3 -m train --task music_lm \
+    --rnn gru \
+    --data JSB \
+    --bs 1 \
+    --epoch 500 \
+    --lr 0.001 \
+    --optim rmsprop \
+    --clip 1.0 \
+    --loss bce \
+    --save_dir music/jsb/gru \
+    -v
+```
+Which corresponds to the following:
+* Trains a music LM
+* The music LM uses GRU as the underlying RNN
+* Train on the JSB dataset
+* Batch size of 1 sequence per batch
+* Train for 500 epochs
+* Use 0.001 for learning rate
+* Use the RMSprop optimizer
+* Gradient clipping to 1.0
+* Use binary cross entropy loss as the training criterion
+* Save model to `./exp/music/jsb/gru` and log training to `./log/music/jsb/gru`
+* Verbose output (output per epoch loss and per epoch NLL to command line)
+
+For other training arguments, refer to `train.py`.
 
 ## Data Sources
 For the music datasets (JSB, MuseData, Piano-midi, Nottingham), refer to the [TCN repository](https://github.com/locuslab/TCN/tree/master/TCN/poly_music). TCN, or Temporal Convolutional Networks, can be found in the work [An Empirical Evaluation of Generic Convolutional and Recurrent Networks for Sequence Modeling](https://arxiv.org/abs/1803.01271). You can cite their work with:
