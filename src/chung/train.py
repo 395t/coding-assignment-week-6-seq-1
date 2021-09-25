@@ -137,6 +137,8 @@ def train_lm(args):
 
     train_ex_idx = 42  # random.randint(0, len(train) - 1)
     val_ex_idx = 42  # random.randint(0, len(valid) - 1)
+    if args.data == 'Piano':
+        val_ex_idx = 6
 
     for epoch in tqdm(epochs):
         # train

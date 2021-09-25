@@ -4,3 +4,5 @@ saved
 *.ipynb_checkpoints*
 condor_run.sh
 run_set.sh
+*.pt
+*.png
