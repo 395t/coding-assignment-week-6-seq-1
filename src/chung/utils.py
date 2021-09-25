@@ -74,6 +74,11 @@ class MusicDataset(Dataset):
         return X, y
 
 
+def _iwslt2017trans_data_collate(batch):
+    # TODO
+    pass
+
+
 # Part of this dataset script use information from: https://pytorch.org/tutorials/beginner/translation_transformer.html
 class IWSLT2017TransDataset(Dataset):
     def __init__(self, src_lang='de', tgt_lang='en', dataset_type='train', load_from_file=True):
@@ -100,10 +105,11 @@ class IWSLT2017TransDataset(Dataset):
         else:
             train_iter = IWSLT2017(root=translation_root, split='train', language_pair=(self.src_lang, self.tgt_lang))
             self.src_vocab = build_vocab_from_iterator(yield_tokens(train_iter, self.src_tokenizer, language_index[self.src_lang]),
-                                                       min_freq=1,
+                                                       min_freq=5,
                                                        specials=special_symbols,
                                                        special_first=True)
             torch.save(self.src_vocab, src_vocab_fname)
+        print(f"there are {len(self.src_vocab)} tokens in {src_lang} vocab")
 
         print(f"building {tgt_lang} vocab...")
         tgt_vocab_fname = os.path.join(vocab_path, f'{tgt_lang}_tgt.pt')
@@ -113,21 +119,22 @@ class IWSLT2017TransDataset(Dataset):
         else:
             train_iter = IWSLT2017(root=translation_root, split='train', language_pair=(self.src_lang, self.tgt_lang))
             self.tgt_vocab = build_vocab_from_iterator(yield_tokens(train_iter, self.tgt_tokenizer, language_index[self.tgt_lang]),
-                                                       min_freq=1,
+                                                       min_freq=5,
                                                        specials=special_symbols,
                                                        special_first=True)
             torch.save(self.tgt_vocab, tgt_vocab_fname)
+        print(f"there are {len(self.tgt_vocab)} tokens in {tgt_lang} vocab")
 
         self.src_vocab.set_default_index(UNK_IDX)
         self.tgt_vocab.set_default_index(UNK_IDX)
 
         # build dataset
-        print(f"building translation {src_lang}->{tgt_lang} dataset...")
+        print(f"building translation {dataset_type} {src_lang}->{tgt_lang} dataset...")
         data_path = os.path.join(translation_root, 'IWSLT2017/translation')
         os.makedirs(data_path, exist_ok=True)
-        preprocessed_fname = os.path.join(data_path, f'{src_lang}_to_{tgt_lang}.json')
+        preprocessed_fname = os.path.join(data_path, f'{dataset_type}_{src_lang}_to_{tgt_lang}.json')
         if load_from_file and os.path.exists(preprocessed_fname):
-            print(f"found preprocessed {src_lang}->{tgt_lang} dataset, loading...")
+            print(f"found preprocessed {dataset_type} {src_lang}->{tgt_lang} dataset, loading...")
             with open(preprocessed_fname, 'r') as f:
                 self.data = json.load(f)
         else:
@@ -139,6 +146,12 @@ class IWSLT2017TransDataset(Dataset):
                 self.data.append((src_ids, tgt_ids))
             with open(preprocessed_fname, 'w') as f:
                 json.dump(self.data, f)
+
+        self.max_src_len = max(map(lambda ex: len(ex[0]), self.data))
+        self.max_tgt_len = max(map(lambda ex: len(ex[1]), self.data))
+
+        # sort so that sentences of similar length are together
+        self.data.sort(reverse=True, key=lambda ex: (len(ex[0]), len(ex[1])))
 
     def _convert_text_to_ids(self, text, tokenizer, vocab_indexer):
         text = text.rstrip('\n')

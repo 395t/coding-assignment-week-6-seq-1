@@ -1,6 +1,10 @@
 # Empirical Evaluation of Gated Recurrent Neural Networks on Sequence Modeling
 
+Coder: Jay Liao, jl64465
+
 This directory contains the code for the work [Empirical Evaluation of Gated Recurrent Neural Networks on Sequence Modeling](https://arxiv.org/abs/1412.3555).
+
+I offer two sets of experiment tasks: music sequence modeling and seq2seq translation. These experiments are meant to test performance differences between GRU, LSTM, and Tanh RNNs. The models in each task have about the same number of parameters.
 
 All code are meant to be run from this directory (training, models) to avoid missing dependencies and other errors.
 
@@ -22,7 +26,7 @@ python3 -m spacy download de_core_news_sm
 
 You can get the dependencies and data by running `./prereq.sh`. Make sure you have Python 3.6.13 installed.
 
-## Model Training
+## Music Sequence Modeling Training
 Here's an example training run:
 ```bash
 python3 -m train --task music_lm \
@@ -51,6 +55,9 @@ Which corresponds to the following:
 * Verbose output (output per epoch loss and per epoch NLL to command line)
 
 For other training arguments, refer to `train.py`.
+
+## Seq2seq Translation Training
+TBD
 
 ## Data Sources
 For the music datasets (JSB, MuseData, Piano-midi, Nottingham), refer to the [TCN repository](https://github.com/locuslab/TCN/tree/master/TCN/poly_music). TCN, or Temporal Convolutional Networks, can be found in the work [An Empirical Evaluation of Generic Convolutional and Recurrent Networks for Sequence Modeling](https://arxiv.org/abs/1803.01271). You can cite their work with:
