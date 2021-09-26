@@ -3,6 +3,7 @@ saved
 *__pycache__*
 *.ipynb_checkpoints*
 condor_run.sh
-run_set.sh
+run_lm_set.sh
+run_trans_set.sh
 *.pt
 *.png

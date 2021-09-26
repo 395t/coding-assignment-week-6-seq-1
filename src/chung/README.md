@@ -13,6 +13,7 @@ All code are meant to be run from this directory (training, models) to avoid mis
 * PyTorch 1.9.1
 * Torchtext 0.10.1
 * Spacy 3.1.3
+* NLTK 3.6.3
 * Scipy 1.5.2
 * Matplotlib 3.3.4
 * TorchsummaryX 1.3.0
@@ -22,6 +23,7 @@ All code are meant to be run from this directory (training, models) to avoid mis
 ```bash
 python3 -m spacy download en_core_web_sm
 python3 -m spacy download de_core_news_sm
+python3 -m spacy download it_core_news_sm
 ```
 
 You can get the dependencies and data by running `./prereq.sh`. Make sure you have Python 3.6.13 installed.
