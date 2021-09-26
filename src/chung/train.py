@@ -427,9 +427,6 @@ def train_trans(args):
         # save per 10 epochs
         if (epoch + 1) % 10 == 0:
             print(f"saving at epoch {epoch}...")
-            # compute full valid bleu per 50 epochs
-            if (epoch + 1) % 50 == 0:
-                valid_bleu, _ = _compute_bleu(model, valid, device)
             epoch_dir = os.path.join(save_dir, f"{epoch}")
             os.makedirs(epoch_dir, exist_ok=True)
             save(epoch_dir, epoch, model, optim, losses, metrics, bleu_score=valid_bleu)
