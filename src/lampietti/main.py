@@ -1,8 +1,5 @@
 from __future__ import unicode_literals, print_function, division
 from io import open
-import unicodedata
-import string
-import re
 import random
 
 import torch
@@ -11,12 +8,22 @@ from torch import optim
 import torch.nn.functional as F
 from utils import IWSLT2017TransDataset
 
+import matplotlib.pyplot as plt
+plt.switch_backend('agg')
+import matplotlib.ticker as ticker
+import time
+import math
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 SOS_token = 2
 EOS_token = 3
 
 MAX_LENGTH = 50
+
+teacher_forcing_ratio = 0.5
+
+d = IWSLT2017TransDataset(src_lang='en', tgt_lang='de', dataset_type='train')
 
 class EncoderRNN(nn.Module):
     def __init__(self, input_size, hidden_size):
@@ -91,9 +98,6 @@ class AttnDecoderRNN(nn.Module):
     def initHidden(self):
         return torch.zeros(1, 1, self.hidden_size, device=device)
 
-teacher_forcing_ratio = 0.5
-
-
 def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, max_length=MAX_LENGTH):
     encoder_hidden = encoder.initHidden()
 
@@ -148,15 +152,10 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
 
     return loss.item() / target_length
 
-import time
-import math
-
-
 def asMinutes(s):
     m = math.floor(s / 60)
     s -= m * 60
     return '%dm %ds' % (m, s)
-
 
 def timeSince(since, percent):
     now = time.time()
@@ -164,8 +163,6 @@ def timeSince(since, percent):
     es = s / (percent)
     rs = es - s
     return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
-
-d = IWSLT2017TransDataset(src_lang='en', tgt_lang='de', dataset_type='train')
 
 def trainIters(encoder, decoder, n_iters, training_pairs, print_every=1000, plot_every=100, learning_rate=0.01):
     start = time.time()
@@ -175,8 +172,6 @@ def trainIters(encoder, decoder, n_iters, training_pairs, print_every=1000, plot
 
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
-    # training_pairs = [tensorsFromPair(random.choice(pairs))
-    #                   for i in range(n_iters)]
     criterion = nn.NLLLoss()
 
     for iter in range(1, n_iters + 1):
@@ -202,12 +197,6 @@ def trainIters(encoder, decoder, n_iters, training_pairs, print_every=1000, plot
 
     showPlot(plot_losses)
 
-import matplotlib.pyplot as plt
-plt.switch_backend('agg')
-import matplotlib.ticker as ticker
-import numpy as np
-
-
 def showPlot(points):
     plt.figure()
     fig, ax = plt.subplots()
@@ -218,7 +207,6 @@ def showPlot(points):
 
 def evaluate(encoder, decoder, input_tensor, max_length=MAX_LENGTH):
     with torch.no_grad():
-        # input_tensor = tensorFromSentence(input_lang, sentence)
         input_length = input_tensor.size()[0]
         input_tensor.resize_(input_length, 1)
         encoder_hidden = encoder.initHidden()
@@ -247,7 +235,6 @@ def evaluate(encoder, decoder, input_tensor, max_length=MAX_LENGTH):
                 break
             else:
                 decoded_words.append(d.src_vocab.lookup_token(topi.item()))
-                # decoded_words.append(output_lang.index2word[topi.item()])
 
             decoder_input = topi.squeeze().detach()
 
