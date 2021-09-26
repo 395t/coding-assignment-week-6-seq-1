@@ -123,7 +123,7 @@ def initialize(args):
     if args.continue_training:
         load_dir = os.path.join(save_dir, args.model_name)
         print("loading from: ", load_dir)
-        start_ep, model, optim, losses, metrics = load(load_dir, model, optim)
+        states_dict, start_ep, model, optim, losses, metrics = load(load_dir, model, optim)
     print("starting epoch: ", start_ep)
     print("ending epoch: ", args.epochs)
     epochs = range(start_ep, args.epochs, 1)
@@ -394,7 +394,7 @@ def train_trans(args):
             tb_add_trans_ex(valid_logger, valid, model, ex_x, ex_y, device, epoch, text_dir)
 
         # compute bleu score of a subset of the validation set
-        valid_bleu = _compute_bleu(model, valid, device, subset=20)
+        valid_bleu, _ = _compute_bleu(model, valid, device, subset=20)
 
         # log and save
         mean_train_loss = sum(train_loss) / len(train_loss)
@@ -429,7 +429,7 @@ def train_trans(args):
             print(f"saving at epoch {epoch}...")
             # compute full valid bleu per 50 epochs
             if (epoch + 1) % 50 == 0:
-                valid_bleu = _compute_bleu(model, valid, device)
+                valid_bleu, _ = _compute_bleu(model, valid, device)
             epoch_dir = os.path.join(save_dir, f"{epoch}")
             os.makedirs(epoch_dir, exist_ok=True)
             save(epoch_dir, epoch, model, optim, losses, metrics, bleu_score=valid_bleu)
@@ -458,7 +458,7 @@ if __name__ == '__main__':
     parser.add_argument('--max_len', type=int, default=50)
 
     # min witness of token to be added to vocab
-    parser_add_argument('--min_freq', type=int, default=5)
+    parser.add_argument('--min_freq', type=int, default=5)
 
     # model type
     parser.add_argument('--rnn', type=str, default='gru', choices=['lstm', 'gru', 'tanh'])

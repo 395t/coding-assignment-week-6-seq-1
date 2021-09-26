@@ -244,7 +244,7 @@ def _compute_bleu(model, data, device, subset=None):
         candidate = pred.tolist()
         score = sentence_bleu(ref, candidate)
         bleu_scores.append(score)
-    return sum(bleu_scores) / len(bleu_scores)
+    return sum(bleu_scores) / len(bleu_scores), bleu_scores
 
 
 def save(save_dir, epoch, model, optim, losses, metrics, bleu_score=None):
@@ -263,12 +263,13 @@ def save(save_dir, epoch, model, optim, losses, metrics, bleu_score=None):
     torch.save(optim.state_dict(), os.path.join(save_dir, 'optim.pt'))
 
 
-def load(load_dir, model, optim):
+def load(load_dir, model, optim=None):
     with open(os.path.join(load_dir, 'states.json'), 'r') as f:
         states_dict = json.load(f)
     model.load_state_dict(torch.load(os.path.join(load_dir, 'model.pt')))
-    optim.load_state_dict(torch.load(os.path.join(load_dir, 'optim.pt')))
+    if optim is not None:
+        optim.load_state_dict(torch.load(os.path.join(load_dir, 'optim.pt')))
     epoch = states_dict['epoch'] + 1
     losses = [states_dict['train_loss'], states_dict['valid_loss']]
     metrics = [states_dict['train_metric'], states_dict['valid_metric']]
-    return epoch, model, optim, losses, metrics
+    return states_dict, epoch, model, optim, losses, metrics
