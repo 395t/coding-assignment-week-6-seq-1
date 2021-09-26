@@ -9,7 +9,7 @@ import torch.nn.functional as F
 from utils import IWSLT2017TransDataset
 
 import matplotlib.pyplot as plt
-plt.switch_backend('agg')
+# plt.switch_backend('agg')
 import matplotlib.ticker as ticker
 import time
 import math
@@ -26,12 +26,13 @@ teacher_forcing_ratio = 0.5
 d = IWSLT2017TransDataset(src_lang='en', tgt_lang='de', dataset_type='train')
 
 class EncoderRNN(nn.Module):
-    def __init__(self, input_size, hidden_size):
+    def __init__(self, input_size, hidden_size, embed_size):
         super(EncoderRNN, self).__init__()
         self.hidden_size = hidden_size
 
-        self.embedding = nn.Embedding(input_size, hidden_size)
-        self.gru = nn.GRU(hidden_size, hidden_size)
+        self.embedding = nn.Embedding(input_size, embed_size)
+
+        self.gru = nn.GRU(embed_size, hidden_size)
 
     def forward(self, input, hidden):
         embedded = self.embedding(input).view(1, 1, -1)
@@ -204,6 +205,8 @@ def showPlot(points):
     loc = ticker.MultipleLocator(base=0.2)
     ax.yaxis.set_major_locator(loc)
     plt.plot(points)
+    plt.savefig("loss.png")
+    plt.show()
 
 def evaluate(encoder, decoder, input_tensor, max_length=MAX_LENGTH):
     with torch.no_grad():
@@ -251,9 +254,10 @@ def evaluateRandomly(encoder, decoder, n=10):
         print('')
 
 hidden_size = 256
-encoder1 = EncoderRNN(len(d.src_vocab), hidden_size).to(device)
+embed_size = 256
+encoder1 = EncoderRNN(len(d.src_vocab), hidden_size, embed_size).to(device)
 attn_decoder1 = AttnDecoderRNN(hidden_size, len(d.tgt_vocab), dropout_p=0.1).to(device)
 
-trainIters(encoder1, attn_decoder1, n_iters=1000, training_pairs=d, print_every=100)
+trainIters(encoder1, attn_decoder1, n_iters=100, training_pairs=d, print_every=10, plot_every=10)
 
 # evaluateRandomly(encoder1, attn_decoder1)
