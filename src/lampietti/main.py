@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from io import open
 import random
+from unicodedata import bidirectional
 
 import torch
 import torch.nn as nn
@@ -23,43 +24,43 @@ MAX_LENGTH = 50
 
 d = IWSLT2017TransDataset(src_lang='en', tgt_lang='de', dataset_type='train')
 
+# Original Encoder (1-D GRU)
+# class EncoderRNN(nn.Module):
+#     def __init__(self, input_size, hidden_size, embed_size):
+#         super(EncoderRNN, self).__init__()
+#         self.hidden_size = hidden_size
+
+#         self.embedding = nn.Embedding(input_size, embed_size)
+
+#         self.gru = nn.GRU(embed_size, hidden_size)
+
+#     def forward(self, input, hidden):
+#         embedded = self.embedding(input).view(1, 1, -1)
+#         output = embedded
+#         output, hidden = self.gru(output, hidden)
+#         return output, hidden
+
+#     def initHidden(self):
+#         return torch.zeros(1, 1, self.hidden_size, device=device)
+
 class EncoderRNN(nn.Module):
     def __init__(self, input_size, hidden_size, embed_size):
         super(EncoderRNN, self).__init__()
         self.hidden_size = hidden_size
 
         self.embedding = nn.Embedding(input_size, embed_size)
-
-        self.gru = nn.GRU(embed_size, hidden_size)
+        self.gru = nn.GRU(embed_size, hidden_size, bidirectional=True)
 
     def forward(self, input, hidden):
-        embedded = self.embedding(input).view(1, 1, -1)
+        embedded = self.embedding(input).view(1, 1, -1) # (batch_size, input_len, embed_size)
         output = embedded
-        output, hidden = self.gru(output, hidden)
-        return output, hidden
+        output, hidden = self.gru(output, hidden) # (input_len, batch_size, hidden_size*2) (n_layers*2, batch_size, hidden_size)
+        output = (output[:, :, :self.hidden_size] +
+                       output[:, :, self.hidden_size:])
+        return output, hidden # (input_len, batch_size, hidden_size) (n_layers*2, batch_size, hidden_size)
 
     def initHidden(self):
-        return torch.zeros(1, 1, self.hidden_size, device=device)
-
-# class EncoderRNN(nn.Module):
-#     def __init__(self, input_size, hidden_size):
-#         super(EncoderRNN, self).__init__()
-#         self.hidden_size = hidden_size
-
-#         self.embedding = nn.Embedding(input_size, hidden_size)
-#         self.gru = nn.GRU(hidden_size, hidden_size, bidirectional=True)
-
-#     def forward(self, input, hidden):
-#         embedded = self.embedding(input).view(1, 1, -1)  # (batch_size, seq_len, embed_dim)
-#         output = embedded
-#         output, hidden = self.gru(output, hidden)  # (seq_len, batch, hidden_size*2)
-#         # sum bidirectional outputs, the other option is to retain concat features
-#         output = (output[:, :, :self.hidden_size] +
-#                        output[:, :, self.hidden_size:])
-#         return output, hidden
-
-#     def initHidden(self):
-#         return torch.zeros(1, 1, self.hidden_size, device=device)
+        return torch.zeros(2, 1, self.hidden_size, device=device)
 
 class AttnDecoderRNN(nn.Module):
     def __init__(self, hidden_size, output_size, dropout_p=0.1, max_length=MAX_LENGTH):
@@ -109,18 +110,18 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
     input_tensor.resize_(input_length, 1)
     target_tensor.resize_(target_length, 1)
 
-    encoder_outputs = torch.zeros(max_length, encoder.hidden_size, device=device)
+    encoder_outputs = torch.zeros(max_length, encoder.hidden_size, device=device) # (max_length, hidden_size)
 
     loss = 0
 
     for ei in range(input_length):
         encoder_output, encoder_hidden = encoder(
-            input_tensor[ei], encoder_hidden)
-        encoder_outputs[ei] = encoder_output[0, 0]
+            input_tensor[ei], encoder_hidden) # (input_len, batch_size, hidden_size) (n_layers*2, batch_size, hidden_size)
+        encoder_outputs[ei] = encoder_output[0, 0] # (hidden_size)
 
     decoder_input = torch.tensor([[SOS_token]], device=device)
 
-    decoder_hidden = encoder_hidden
+    decoder_hidden = encoder_hidden # (n_layers*2, batch_size, hidden_size)
 
     for di in range(target_length):
         decoder_output, decoder_hidden, decoder_attention = decoder(
@@ -192,7 +193,7 @@ def showPlot(points):
     ax.yaxis.set_major_locator(loc)
     plt.plot(points)
     plt.savefig("loss.png")
-    plt.show()
+    # plt.show()
 
 def evaluate(encoder, decoder, input_tensor, max_length=MAX_LENGTH):
     with torch.no_grad():
@@ -240,7 +241,7 @@ def evaluateRandomly(encoder, decoder, n=10):
         print('')
 
 hidden_size = 256
-embed_size = 256
+embed_size = 128
 encoder1 = EncoderRNN(len(d.src_vocab), hidden_size, embed_size).to(device)
 attn_decoder1 = AttnDecoderRNN(hidden_size, len(d.tgt_vocab), dropout_p=0.1).to(device)
 
