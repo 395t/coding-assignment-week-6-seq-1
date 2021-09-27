@@ -8,7 +8,8 @@ run_trans_set.sh
 exp/music/piano/gru_exp
 *text_train
 *text_valid
+*img_train
+*img_valid
 *infer.log
 *infer.out
 *.pt
-*.png

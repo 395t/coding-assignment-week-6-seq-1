@@ -12,6 +12,8 @@ All code are meant to be run from this directory (training, models) to avoid mis
 * Python 3.6.13
 * PyTorch 1.9.1
 * Torchtext 0.10.1
+* JupyterLab 3.1.13
+* Notebook 6.4.4
 * Spacy 3.1.3
 * NLTK 3.6.3
 * Scipy 1.5.2
