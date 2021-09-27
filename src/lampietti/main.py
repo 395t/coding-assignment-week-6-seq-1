@@ -24,25 +24,6 @@ MAX_LENGTH = 50
 
 d = IWSLT2017TransDataset(src_lang='en', tgt_lang='de', dataset_type='train')
 
-# Original Encoder (1-D GRU)
-# class EncoderRNN(nn.Module):
-#     def __init__(self, input_size, hidden_size, embed_size):
-#         super(EncoderRNN, self).__init__()
-#         self.hidden_size = hidden_size
-
-#         self.embedding = nn.Embedding(input_size, embed_size)
-
-#         self.gru = nn.GRU(embed_size, hidden_size)
-
-#     def forward(self, input, hidden):
-#         embedded = self.embedding(input).view(1, 1, -1)
-#         output = embedded
-#         output, hidden = self.gru(output, hidden)
-#         return output, hidden
-
-#     def initHidden(self):
-#         return torch.zeros(1, 1, self.hidden_size, device=device)
-
 class EncoderRNN(nn.Module):
     def __init__(self, input_size, hidden_size, embed_size):
         super(EncoderRNN, self).__init__()
