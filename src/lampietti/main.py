@@ -62,6 +62,31 @@ class EncoderRNN(nn.Module):
     def initHidden(self):
         return torch.zeros(2, 1, self.hidden_size, device=device)
 
+class Attn(nn.Module):
+    # Adapted from A-Jacobson's open source code on neural machine translation
+    # https://github.com/A-Jacobson/minimal-nmt/blob/master/nmt_tutorial.ipynb
+
+    def __init__(self, dim):
+        super(Attn, self).__init__()
+        self.W = nn.Linear(dim, dim, bias=False)
+
+    def score(self, decoder_hidden, encoder_out):
+        # linear transform encoder out (seq, batch, dim)
+        encoder_out = self.W(encoder_out)
+        # (batch, seq, dim) | (2, 15, 50)
+        encoder_out = encoder_out.permute(1, 0, 2)
+        # (2, 15, 50) @ (2, 50, 1)
+        return encoder_out @ decoder_hidden.permute(1, 2, 0)
+
+    def forward(self, decoder_hidden, encoder_out):
+        energies = self.score(decoder_hidden, encoder_out)
+        mask = F.softmax(energies, dim=1)  # batch, seq, 1
+        context = encoder_out.permute(
+            1, 2, 0) @ mask  # (2, 50, 15) @ (2, 15, 1)
+        context = context.permute(2, 0, 1)  # (seq, batch, dim)
+        mask = mask.permute(2, 0, 1)  # (seq2, batch, seq1)
+        return context, mask
+
 class AttnDecoderRNN(nn.Module):
     def __init__(self, hidden_size, output_size, dropout_p=0.1, max_length=MAX_LENGTH):
         super(AttnDecoderRNN, self).__init__()
