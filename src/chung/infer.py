@@ -5,6 +5,7 @@ import random
 import torch
 import numpy as np
 
+from tqdm import tqdm
 from torchsummaryX import summary
 
 from models import MusicLM, S2STrans
@@ -78,13 +79,29 @@ def infer_dataset(args):
     model, data, device, states_dict, load_dir = initialize(args)
     model.eval()
     if args.task == "music_lm":
-        pass
+        nlls, nll_lens = [], []
+        for idx in tqdm(range(len(data))):
+            inp, tgt = data[idx]
+            inp, tgt = inp.unsqueeze(1).to(device), tgt.unsqueeze(1).to(device)
+            logits = model(inp)
+            nll = _compute_nll(logits, tgt)
+            nll = nll.detach().cpu().item()
+            nlls.append(nll)
+            nll_lens.append(inp.shape[0])
+        score = sum(nlls) / sum(nll_lens)
+        scores = [nll / nll_len for nll, nll_len in zip(nlls, nll_lens)]
+        print(f"{args.data} {args.data_type} NLL score: ", score)
+        states_dict[f"{args.data_type}_nll"] = score
+        states_dict[f"{args.data_type}_nll_scores"] = scores
+        print(f"saving state to {load_dir}")
+        with open(os.path.join(load_dir, "states.json"), 'w') as f:
+            json.dump(states_dict, f)
     elif args.task == "translate":
         score, scores = _compute_bleu(model, data, device)
         print(f"{args.data} {args.data_type} BLEU score: ", score)
         states_dict[f"{args.data_type}_bleu"] = score
         states_dict[f"{args.data_type}_bleu_scores"] = scores
-        print(f"saving state to {load_dir}...")
+        print(f"saving state to {load_dir}")
         with open(os.path.join(load_dir, "states.json"), 'w') as f:
             json.dump(states_dict, f)
     else:
