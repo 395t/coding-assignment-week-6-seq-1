@@ -271,13 +271,17 @@ def _compute_bleu(model, data, device, subset=None):
     return sum(bleu_scores) / len(bleu_scores)
 
 
-def save(save_dir, epoch, model, optim, losses, metrics, bleu_score=None):
+def save(save_dir, epoch, model, optim, losses, bleu_score=None):
+    # states_dict = {
+    #     "epoch": epoch,
+    #     "train_loss": losses[0],
+    #     "valid_loss": losses[1],
+    #     "train_metric": metrics[0],
+    #     "valid_metric": metrics[1],
+    # }
     states_dict = {
         "epoch": epoch,
-        "train_loss": losses[0],
-        "valid_loss": losses[1],
-        "train_metric": metrics[0],
-        "valid_metric": metrics[1],
+        "train_loss": losses,
     }
     if bleu_score is not None:
         states_dict['bleu_score'] = bleu_score
@@ -287,12 +291,13 @@ def save(save_dir, epoch, model, optim, losses, metrics, bleu_score=None):
     torch.save(optim.state_dict(), os.path.join(save_dir, 'optim.pt'))
 
 
-def load(load_dir, model, optim):
+def load(load_dir, model, encoder_optim, decoder_optim):
     with open(os.path.join(load_dir, 'states.json'), 'r') as f:
         states_dict = json.load(f)
     model.load_state_dict(torch.load(os.path.join(load_dir, 'model.pt')))
-    optim.load_state_dict(torch.load(os.path.join(load_dir, 'optim.pt')))
+    encoder_optim.load_state_dict(torch.load(os.path.join(load_dir, 'encoder_optim.pt')))
+    decoder_optim.load_state_dict(torch.load(os.path.join(load_dir, 'decoder_optim.pt')))
     epoch = states_dict['epoch'] + 1
     losses = [states_dict['train_loss'], states_dict['valid_loss']]
     metrics = [states_dict['train_metric'], states_dict['valid_metric']]
-    return epoch, model, optim, losses, metrics
+    return epoch, model, encoder_optim, decoder_optim, losses, metrics

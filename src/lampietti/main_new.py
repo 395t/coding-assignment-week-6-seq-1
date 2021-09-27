@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+from unicodedata import name
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import time
@@ -15,11 +16,12 @@ from torch.autograd import Variable
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-d = IWSLT2017TransDataset(src_lang='en', tgt_lang='de', dataset_type='train')
+src_langs = ['en', 'de', 'it']
+tgt_langs = ['de', 'it', 'en']
 
 subset_size = 25
 batch_size = 5
-epochs = 10
+num_epochs = 1
 embed_dim = 256
 hidden_dim = 512
 n_layers = 2
@@ -146,9 +148,9 @@ def timeSince(since, percent):
     rs = es - s
     return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
 
-def train_model(encoder, decoder, training_pairs, epochs, print_every=1000, plot_every=100, learning_rate=0.01):
-
+def train_model(encoder, decoder, training_pairs, epochs, lang_idx, print_every=1000, plot_every=1000, learning_rate=0.01):
     seq2seq = Seq2Seq(encoder, decoder)
+    seq2seq.train()
     decoding_helper = Teacher(teacher_forcing_ratio=0.5)
 
     start = time.time()
@@ -171,7 +173,7 @@ def train_model(encoder, decoder, training_pairs, epochs, print_every=1000, plot
             outputs, masks = seq2seq(input_batch, decoding_helper)
 
             loss = F.cross_entropy(outputs.view(-1, outputs.size(2)),
-                           target_batch[1:].reshape(-1), ignore_index=1)
+                        target_batch[1:].reshape(-1), ignore_index=1)
 
             loss.backward()
             nn.utils.clip_grad_norm_(seq2seq.parameters(), 10.0, norm_type=2)  # prevent exploding grads
@@ -194,26 +196,77 @@ def train_model(encoder, decoder, training_pairs, epochs, print_every=1000, plot
         print("Epoch_{} finished".format(epoch))
     
     # Save loss graph
-    showPlot(plot_losses)
+    showPlot(plot_losses, lang_idx)
 
     # Save model
     cwd = os.getcwd()
     model_path = os.path.join(cwd, 'models')
-    os.makedirs(model_path, exist_ok=True)
-    save(model_path, epochs, seq2seq, optimizer, plot_losses)
+    specific_model_path = os.path.join(model_path, '{}_{}'.format(src_langs[lang_idx], tgt_langs[lang_idx]))
+    
+    os.makedirs(specific_model_path, exist_ok=True)
+    save(specific_model_path, epochs, seq2seq, optimizer, plot_losses)
 
-def showPlot(points):
+    return seq2seq
+
+def test_model(seq2seq, lang_idx):
+    # Get test results
+    seq2seq.eval()
+    test_d = IWSLT2017TransDataset(src_lang=src_langs[lang_idx], tgt_lang=tgt_langs[lang_idx], dataset_type='test')
+    # Use greedy decoding helper to choose highest score
+    decoding_helper_greedy = Greedy()
+    decoding_helper_greedy.set_maxlen(49)
+    # compute total number of iterations
+    n_iters = math.ceil(subset_size / batch_size)
+    # evaluate on test set
+    total_loss = 0
+    for iter in range(1, n_iters + 1):
+        input_batch, target_batch = test_d.get_batch(batch_size, iter-1)
+        
+        outputs, masks = seq2seq(input_batch, decoding_helper_greedy)
+
+        loss = F.cross_entropy(outputs.view(-1, outputs.size(2)),
+                           target_batch[1:].reshape(-1), ignore_index=1)
+
+        total_loss += loss.item()
+
+        # preds = outputs.topk(1)[1].squeeze(2)
+
+        # source = test_d.convert_src_ids_to_text(input_batch[:, 0].tolist())
+        # prediction = test_d.convert_tgt_ids_to_text(preds[:, 0].tolist())
+        # target = test_d.convert_tgt_ids_to_text(target_batch[1:, 0].tolist())
+
+        # print("source: ", source)
+        # print("prediction: ", prediction)
+        # print("target: ", target)
+
+    print("avg_loss: ", total_loss / n_iters)
+
+
+def showPlot(points, lang_idx):
     plt.figure()
     fig, ax = plt.subplots()
     # this locator puts ticks at regular intervals
     loc = ticker.MultipleLocator(base=0.2)
     ax.yaxis.set_major_locator(loc)
     plt.plot(points)
-    plt.savefig("loss.png")
+    plt.savefig("loss_{}_{}.png".format(src_langs[lang_idx], tgt_langs[lang_idx]))
 
-encoder = Encoder(source_vocab_size=len(d.src_vocab), embed_dim=embed_dim,
-                  hidden_dim=hidden_dim, n_layers=n_layers, dropout=dropout)
-decoder = Decoder(target_vocab_size=len(d.tgt_vocab), embed_dim=embed_dim,
-                  hidden_dim=hidden_dim, n_layers=n_layers, dropout=dropout)
 
-train_model(encoder, decoder, d, epochs=1, print_every=2, plot_every=2)
+if __name__ == "__main__":
+
+    # Train and save the three models
+    for lang_idx in range(len(src_langs)):
+        # Get current src and tgt language data
+        d = IWSLT2017TransDataset(src_lang=src_langs[lang_idx], tgt_lang=tgt_langs[lang_idx], dataset_type='train')
+
+        encoder = Encoder(source_vocab_size=len(d.src_vocab), embed_dim=embed_dim,
+                        hidden_dim=hidden_dim, n_layers=n_layers, dropout=dropout)
+        decoder = Decoder(target_vocab_size=len(d.tgt_vocab), embed_dim=embed_dim,
+                        hidden_dim=hidden_dim, n_layers=n_layers, dropout=dropout)
+
+        trained_model = train_model(encoder, decoder, d, epochs=num_epochs, lang_idx=lang_idx)
+
+        # test model
+        test_model(trained_model, lang_idx)
+
+    
