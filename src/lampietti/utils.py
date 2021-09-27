@@ -169,16 +169,40 @@ class IWSLT2017TransDataset(Dataset):
         if max_len is not None:
             print(f"truncating all sequences to have max {max_len} tokens...")
             for idx in range(len(self.data)):
+                # source
                 if len(self.data[idx][0]) > max_len:
                     self.data[idx][0] = self.data[idx][0][:max_len - 1] + [EOS_IDX]
+                elif len(self.data[idx][0]) < max_len:
+                    # add padding for batches
+                    padding = [PAD_IDX] * (max_len - len(self.data[idx][0]))
+                    self.data[idx][0] = self.data[idx][0][:-1] + padding + [EOS_IDX]
+                # target
                 if len(self.data[idx][1]) > max_len:
                     self.data[idx][1] = self.data[idx][1][:max_len - 1] + [EOS_IDX]
+                elif len(self.data[idx][1]) < max_len:
+                    # add padding for batches
+                    padding = [PAD_IDX] * (max_len - len(self.data[idx][1]))
+                    self.data[idx][1] = self.data[idx][1][:-1] + padding + [EOS_IDX]
 
         self.max_src_len = max(map(lambda ex: len(ex[0]), self.data))
         self.max_tgt_len = max(map(lambda ex: len(ex[1]), self.data))
 
-        # sort so that sentences of similar length are together
-        #self.data.sort(reverse=True, key=lambda ex: (len(ex[0]), len(ex[1])))
+    def get_batch(self, batch_size, batch_num):
+        # calculate start and end idxs of current batch
+        start_idx = batch_num * batch_size
+        end_idx = start_idx + batch_size
+        if end_idx >= len(self.data):
+            end_idx = len(self.data)
+
+        # get src and tgt batches
+        src_batch = []
+        tgt_batch = []
+        for idx in range(start_idx, end_idx):
+            src_batch.append(self.data[idx][0])
+            tgt_batch.append(self.data[idx][1])
+        
+        return torch.transpose(torch.tensor(src_batch, dtype=torch.int64),0,1), \
+            torch.transpose(torch.tensor(tgt_batch, dtype=torch.int64),0,1)
 
     def _convert_text_to_ids(self, text, tokenizer, vocab_indexer):
         text = text.rstrip('\n')
