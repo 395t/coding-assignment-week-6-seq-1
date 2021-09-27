@@ -2,7 +2,7 @@
 
 Coder: Elias Lampietti, ejl2425
 
-This code was adapted from Sean Robertson's seq2seq translation network linked here(https://github.com/pytorch/tutorials/blob/master/intermediate_source/seq2seq_translation_tutorial.py)
+This code was adapted from Sean Robertson's seq2seq translation network linked [here](https://github.com/pytorch/tutorials/blob/master/intermediate_source/seq2seq_translation_tutorial.py)
 
 ## Requirements
 * Python 3.9.5
