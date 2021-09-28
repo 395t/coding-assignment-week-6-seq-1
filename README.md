@@ -36,7 +36,9 @@ English to German task on WMT'14
 
 Average BLEU score for each model
 
-![BLEU scores](./images/seq2seq_bleu_scores.png)
+|`en_de` | `de_it` | `it_en` |
+|---------|---------|---------|
+| 0.23% | 0.14% | 0.31% |
 
 ----
 ## Gated Recurrent Neural Networks on Sequence Modeling
