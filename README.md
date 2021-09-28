@@ -71,9 +71,9 @@ Italian to English task
 ![Transformer training losses for Italian to English](./images/it_en_transformer.png)
 
 
-## Neural Machine translation
+## Neural Machine Translation by Jointly Learning to Align and Translate
 
-After training each of the three models (en-de, de-it, it-en) with the tuned hyper-parameters, the following NLL loss results were achieved on the test sets.
+After training each of the three models (en-de, de-it, it-en) with the tuned hyper-parameters, the following cross-entropy loss results were achieved on the test sets.
 These losses show that the models were relatively consistent in loss performance.
 
 English to German task
