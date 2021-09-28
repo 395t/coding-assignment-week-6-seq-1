@@ -18,7 +18,7 @@ Given a source sentence in one language, translate it to another language. Our m
 ### Datasets
 For music modeling, we used the polyphonic music dataset [1] that is also used in the experiments in the paper. The datasets contain music from JSB Chorales, Nottingham, MuseData, and Piano-midi.de. Each timestep of the music piece is a vector of dimension 88, which indicates which of the 88 notes are played at that timestep. We got the data from the official TCN [3] repository [4].
 
-In general, JSB Chorales contain short sequences of music, which is about 70 timesteps per piece. Nottingham contain medium-length sequences of music, which is about 180 timesteps per piece. MuseData and Piano-midi.de contain the longer sequences of music, which is about 1000 to 2000 timesteps per piece. Here's a Nottingham example:
+In general, JSB Chorales contain short sequences of music, which is about 70 timesteps per piece. Nottingham contain medium-length sequences of music, which is about 200 timesteps per piece. MuseData and Piano-midi.de contain the longer sequences of music, which is about 1000 to 2000 timesteps per piece. Here's a Nottingham example:
 ![Nottingham Example](src/chung/img/music_example.jpg)
 
 For translation, we used the IWSLT2017 dataset [2], which contained reference texts of translating English to German (`en_de`), German to Italian (`de_it`), and Italian back to English (`it_en`). PyTorch implemented IWSLT2017 as a standard dataset in their `torchtext` package [5], which we used for our experiments.
