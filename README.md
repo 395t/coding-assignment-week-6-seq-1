@@ -99,7 +99,7 @@ Here's some visualization of the models outputs on the JSB validation set during
 | Gold | tanh |
 | ![Gold JSB Valid](src/chung/img/music-gold-jsb-valid.jpg) | ![tanh JSB Valid](src/chung/img/music-tanh-jsb-valid.gif) |
 | LSTM | GRU |
-| ![LSTM JSB Valid](src/chung/img/music-lstm-jsb-valid.jpg) | ![GRU JSB Valid](src/chung/img/music-gru-jsb-valid.jpg) |
+| ![LSTM JSB Valid](src/chung/img/music-lstm-jsb-valid.gif) | ![GRU JSB Valid](src/chung/img/music-gru-jsb-valid.gif) |
 
 ### Machine Translation Results
 ### Conclusion
