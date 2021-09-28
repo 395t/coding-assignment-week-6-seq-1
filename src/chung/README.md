@@ -66,6 +66,7 @@ Here's an example training run:
 ```bash
 python3 -m train --task translate \
     --rnn gru \
+    --num_layers 2 \
     --data iwslt_en_de \
     --bs 128 \
     --epoch 100 \
@@ -82,6 +83,7 @@ python3 -m train --task translate \
 Which corresponds to the following:
 * Trains a MT model
 * The MT model uses GRU as the underlying RNN
+* Use 2 GRU layers, one stacked on top of the other.
 * Train on the IWSLT2017 English to German dataset
 * Batch size of 128 sequence per batch
 * Train for 100 epochs
