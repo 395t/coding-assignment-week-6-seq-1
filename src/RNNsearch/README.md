@@ -39,7 +39,7 @@ The model consists of a bidirectional RNN as the encoder for the source sentence
 The model was trained on 3 different datasets from IWSLT2017. These datasets were English (en) to German (de), German to Italian (it), and Italian to English.
 A subset of 25,000 samples was taken from each dataset for training for 10 epochs with a learning rate of 0.01 and a batch size of 32.
 The models were then evaluated during training on the validation sets (~1,000 samples).
-The average loss (NLL) was calculated after each epoch of the training data as well as once through the validation data.
+The average loss (cross-entropy) was calculated after each epoch of the training data as well as once through the validation data.
 
 ## Training Results
 
@@ -55,7 +55,7 @@ Given stronger computing resources and more time, it is likely lower losses coul
 
 ## Testing Results
 
-After training each of the three models (en-de, de-it, it-en) with the tuned hyper-parameters described in the training section, the following NLL loss results were achieved on the test sets.
+After training each of the three models (en-de, de-it, it-en) with the tuned hyper-parameters described in the training section, the following cross-entropy loss results were achieved on the test sets.
 These losses show that the models were relatively consistent in loss performance.
 
 ![test_set_losses](https://user-images.githubusercontent.com/7085644/135044503-604481e6-0b63-43d0-a1ea-80cb6edc82b4.PNG)
