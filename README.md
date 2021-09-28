@@ -58,11 +58,11 @@ English to German task on WMT'14
 
 ## Gated Recurrent Neural Networks on Sequence Modeling
 
-German to Italian task
+English to German task
 
 ![Transformer training losses for English to German](./images/en_de_transformer.png)
 
-English to German task
+German to Italian task
 
 ![Transformer training losses for German to Italian](./images/de_it_transformer.png)
 
