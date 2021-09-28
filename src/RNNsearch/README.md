@@ -65,6 +65,11 @@ However these scores were very low, likely due to a long sentence size of 50 tok
 
 ![test_set_bleu](https://user-images.githubusercontent.com/7085644/135053058-c88b747c-227f-4ec5-8709-8bcc6d5de241.PNG)
 
+## Conclusion
+
+The model performed pretty consistently for the three datasets (en-de, de-it, it-en) with cross entropy losses that were all around 5.5 with slightly worse performance for the German to Italian translation and the best performance for the English to German dataset BLEU score.
+With more computing power, this model could be trained for more epochs on a larger subset of the data to likely achieve better results as the graphs show that the model has not converged yet.
+
 ## Data Sources
 
 For the IWSLT2017 datasets, refer to the [PyTorch tutorial](https://pytorch.org/tutorials/beginner/translation_transformer.html) for preprocessing code used in this repository. The IWSLT2017 dataset is from the paper [WIT3: Web Inventory of Transcribed and Translated Talks](https://aclanthology.org/2012.eamt-1.60.pdf). You can cite their work with:
