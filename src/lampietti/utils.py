@@ -292,10 +292,13 @@ def save(save_dir, epoch, model, optim, train_losses, valid_losses, bleu_score=N
     torch.save(optim.state_dict(), os.path.join(save_dir, 'optim.pt'))
 
 
-def load(load_dir, model, optim):
+def load(load_dir, model, optim, device):
     with open(os.path.join(load_dir, 'states.json'), 'r') as f:
         states_dict = json.load(f)
-    model.load_state_dict(torch.load(os.path.join(load_dir, 'model.pt')))
+    if device.type == 'cpu':
+        model.load_state_dict(torch.load(os.path.join(load_dir, 'model.pt'), map_location=('cpu')))
+    else:
+        model.load_state_dict(torch.load(os.path.join(load_dir, 'model.pt')))
     optim.load_state_dict(torch.load(os.path.join(load_dir, 'optim.pt')))
     epoch = states_dict['epoch'] + 1
     losses = [states_dict['train_loss'], states_dict['valid_loss']]

@@ -5,6 +5,7 @@ import matplotlib.ticker as ticker
 import time
 import math
 import os
+import json
 import random
 import torch
 import torch.nn as nn
@@ -13,6 +14,8 @@ from torch import optim
 from io import open
 from utils import IWSLT2017TransDataset, save, load
 from torch.autograd import Variable
+from tqdm import tqdm
+from nltk.translate.bleu_score import sentence_bleu
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -40,7 +43,7 @@ class Encoder(nn.Module):
         # sum bidirectional outputs
         encoder_out = (encoder_out[:, :, :self.hidden_dim] +
                        encoder_out[:, :, self.hidden_dim:])
-        return encoder_out, encoder_hidden
+        return encoder_out.to(device), encoder_hidden.to(device)
 
 class Attention(nn.Module):
     def __init__(self, dim):
@@ -58,7 +61,7 @@ class Attention(nn.Module):
         context = encoder_out.permute(1, 2, 0) @ mask
         context = context.permute(2, 0, 1)
         mask = mask.permute(2, 0, 1)
-        return context, mask
+        return context.to(device), mask.to(device)
 
 class Decoder(nn.Module):
     def __init__(self, target_vocab_size, embed_dim, hidden_dim, n_layers, dropout):
@@ -74,7 +77,7 @@ class Decoder(nn.Module):
         context, mask = self.attention(decoder_hidden[:-1], encoder_out)  # 1, 1, 50 (seq, batch, hidden_dim)
         rnn_output, decoder_hidden = self.gru(torch.cat([embedded, context], dim=2), decoder_hidden)
         output = self.out(torch.cat([rnn_output, context], 2))
-        return output, decoder_hidden, mask
+        return output.to(device), decoder_hidden.to(device), mask.to(device)
 
 class Greedy:
     def __init__(self, maxlen=20, sos_index=2):
@@ -88,14 +91,14 @@ class Greedy:
         seq, batch, _ = encoder_out.size()
         outputs = []
         masks = []
-        decoder_hidden = encoder_hidden[-decoder.n_layers:]  # take what we need from encoder
-        output = Variable(torch.zeros(1, batch).long() + self.sos_index)  # start token
+        decoder_hidden = encoder_hidden[-decoder.n_layers:].to(device)  # take what we need from encoder
+        output = Variable(torch.zeros(1, batch).long() + self.sos_index).to(device)  # start token
         for t in range(self.maxlen):
             output, decoder_hidden, mask = decoder(output, encoder_out, decoder_hidden)
             outputs.append(output)
             masks.append(mask.data)
             output = Variable(output.data.max(dim=2)[1])
-        return torch.cat(outputs), torch.cat(masks).permute(1, 2, 0)  # batch, src, trg
+        return torch.cat(outputs), torch.cat(masks).permute(1, 2, 0).to(device)  # batch, src, trg
 
 class Teacher:
     def __init__(self, teacher_forcing_ratio=0.5):
@@ -121,7 +124,7 @@ class Teacher:
             is_teacher = random.random() < self.teacher_forcing_ratio
             if is_teacher:
                 output = self.targets[t].unsqueeze(0)      
-        return torch.cat(outputs), torch.cat(masks).permute(1, 2, 0)  # batch, src, trg
+        return torch.cat(outputs), torch.cat(masks).permute(1, 2, 0).to(device)  # batch, src, trg
 
 class Seq2Seq(nn.Module):
     def __init__(self, encoder, decoder):
@@ -132,7 +135,7 @@ class Seq2Seq(nn.Module):
     def forward(self, source, decoding_helper):
         encoder_out, encoder_hidden = self.encoder(source)
         outputs, masks = decoding_helper.generate(self.decoder, encoder_out, encoder_hidden)
-        return outputs, masks
+        return outputs.to(device), masks.to(device)
 
 ############################################ end of model #####################################################
 
@@ -148,14 +151,15 @@ def timeSince(since, percent):
     rs = es - s
     return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
 
-def train_model(encoder, decoder, training_pairs, epochs, lang_idx, print_every=1000, learning_rate=0.01):
+def train_model(encoder, decoder, training_pairs, validation_pairs, epochs, lang_idx, print_every=1000, learning_rate=0.01):
     seq2seq = Seq2Seq(encoder, decoder).to(device)
-    seq2seq.train()
+    
     decoding_helper = Teacher(teacher_forcing_ratio=0.5)
 
     start = time.time()
     plot_losses = []
     epoch_losses = []
+    valid_losses = []
     print_loss_total = 0  # Reset every print_every
 
     optimizer = optim.SGD(seq2seq.parameters(), lr=learning_rate)
@@ -164,12 +168,13 @@ def train_model(encoder, decoder, training_pairs, epochs, lang_idx, print_every=
     n_iters = math.ceil(subset_size / batch_size)
 
     for epoch in range(epochs):
+        seq2seq.train()
         total_loss = 0
         for iter in range(1, n_iters + 1):
             input_batch, target_batch = training_pairs.get_batch(batch_size, iter-1)
             
-            input_batch.to(device)
-            target_batch.to(device)
+            input_batch = input_batch.to(device)
+            target_batch = target_batch.to(device)
 
             optimizer.zero_grad()
 
@@ -196,50 +201,66 @@ def train_model(encoder, decoder, training_pairs, epochs, lang_idx, print_every=
         print("Epoch {} finished with avg loss {}".format(epoch, total_loss / n_iters))
         # store average loss for this epoch
         epoch_losses.append(total_loss / n_iters)
+
+        # test on validation set
+        valid_loss = test_model(seq2seq, validation_pairs)
+        valid_losses.append(valid_loss)
     
     # Save loss graph
     # showPlot(epoch_losses, lang_idx)
 
-    return seq2seq, epoch_losses, optimizer
+    return seq2seq, epoch_losses, valid_losses, optimizer
 
-def test_model(seq2seq, lang_idx):
+def test_model(model, test_pairs, bleu=False):
     # Get test results
-    seq2seq.eval()
-    test_d = IWSLT2017TransDataset(src_lang=src_langs[lang_idx], tgt_lang=tgt_langs[lang_idx], dataset_type='valid')
+    model.eval()
+    
     # Use greedy decoding helper to choose highest score
     decoding_helper_greedy = Greedy()
     decoding_helper_greedy.set_maxlen(49)
     # compute total number of iterations
-    n_iters = math.ceil(subset_size / batch_size)
-    # evaluate on test set
+    n_iters = math.ceil(len(test_pairs) / batch_size)
+    
+    # Track loss and bleu score
     total_loss = 0
-    for iter in range(1, n_iters + 1):
-        input_batch, target_batch = test_d.get_batch(batch_size, iter-1)
+    bleu_scores = []
+    bleu_score = None
 
-        input_batch.to(device)
-        target_batch.to(device)
+    # evaluate on test set
+    for iter in range(1, n_iters + 1):
+        input_batch, target_batch = test_pairs.get_batch(batch_size, iter-1)
+
+        input_batch = input_batch.to(device)
+        target_batch = target_batch.to(device)
         
-        outputs, masks = seq2seq(input_batch, decoding_helper_greedy)
+        outputs, masks = model(input_batch, decoding_helper_greedy)
 
         loss = F.cross_entropy(outputs.view(-1, outputs.size(2)),
                            target_batch[1:].reshape(-1), ignore_index=1)
 
         total_loss += loss.item()
 
-        # preds = outputs.topk(1)[1].squeeze(2)
+        if bleu:
+            preds = outputs.topk(1)[1].squeeze(2)
+            # source = test_pairs.convert_src_ids_to_text(input_batch[:, 0].tolist())
+            # prediction = test_pairs.convert_tgt_ids_to_text(preds[:, 0].tolist())
+            # target = test_pairs.convert_tgt_ids_to_text(target_batch[1:, 0].tolist())
+            # print("source: ", source)
+            # print("prediction: ", prediction)
+            # print("target: ", target)
 
-        # source = test_d.convert_src_ids_to_text(input_batch[:, 0].tolist())
-        # prediction = test_d.convert_tgt_ids_to_text(preds[:, 0].tolist())
-        # target = test_d.convert_tgt_ids_to_text(target_batch[1:, 0].tolist())
+            for idx in range(0, preds[0].shape[0]):
+                ref = target_batch[1:, idx].tolist()
+                candidate = preds[:, idx].tolist()
+                score = sentence_bleu([ref], candidate)
+                bleu_scores.append(score)
 
-        # print("source: ", source)
-        # print("prediction: ", prediction)
-        # print("target: ", target)
-
-    avg_valid_loss = total_loss / n_iters
-    print("\navg_valid_loss {}\n".format(avg_valid_loss))
-    return avg_valid_loss
-
+    avg_test_loss = total_loss / n_iters
+    print("\navg_test_loss {}\n".format(avg_test_loss))
+    if bleu:
+        bleu_score = sum(bleu_scores) / len(bleu_scores)
+        print("bleu score: {}\n".format(bleu_score))
+    return avg_test_loss, bleu_score
 
 def showPlot(points, lang_idx):
     plt.figure()
@@ -250,47 +271,35 @@ def showPlot(points, lang_idx):
     plt.plot(points)
     plt.savefig("loss_{}_{}.png".format(src_langs[lang_idx], tgt_langs[lang_idx]))
 
+def showTable(data, labels, title):
+    fig, ax = plt.subplots()
+    # hide axes
+    fig.patch.set_visible(False)
+    ax.axis('off')
+    ax.axis('tight')
+    ax.table(cellText=data, colLabels=labels, loc='center')
+    plt.title(title)
+    fig.tight_layout()
+    plt.show()
 
 if __name__ == "__main__":
 
-    print("device: {}".format(device))
+    print("device: {}\n".format(device))
 
-    # Test loading
-
-    # d = IWSLT2017TransDataset(src_lang=src_langs[0], tgt_lang=tgt_langs[0], dataset_type='train')
-
-    # encoder = Encoder(source_vocab_size=len(d.src_vocab), embed_dim=embed_dim,
-    #                     hidden_dim=hidden_dim, n_layers=n_layers, dropout=dropout)
-    # decoder = Decoder(target_vocab_size=len(d.tgt_vocab), embed_dim=embed_dim,
-    #                 hidden_dim=hidden_dim, n_layers=n_layers, dropout=dropout)
-
-    # seq2seq = Seq2Seq(encoder, decoder)
-    # optimizer = optim.SGD(seq2seq.parameters(), lr=0.1)
-
-    # cwd = os.getcwd()
-    # model_path = os.path.join(cwd, 'models')
-    # specific_model_path = os.path.join(model_path, '{}_{}'.format(src_langs[0], tgt_langs[0]))
-
-    # epoch, model, optimizer, losses = load(specific_model_path, seq2seq, optimizer)
-
-    # valid_losses = test_model(model, 0)
-
-    # Train and save the three models
-    for lang_idx in range(len(src_langs)):
+    # Train
+    
+    for lang_idx in range(0, len(src_langs)):
         # Get current src and tgt language data
-        d = IWSLT2017TransDataset(src_lang=src_langs[lang_idx], tgt_lang=tgt_langs[lang_idx], dataset_type='train')
+        d_train = IWSLT2017TransDataset(src_lang=src_langs[lang_idx], tgt_lang=tgt_langs[lang_idx], dataset_type='train')
+        d_valid = IWSLT2017TransDataset(src_lang=src_langs[lang_idx], tgt_lang=tgt_langs[lang_idx], dataset_type='valid')
 
-        encoder = Encoder(source_vocab_size=len(d.src_vocab), embed_dim=embed_dim,
+        encoder = Encoder(source_vocab_size=len(d_train.src_vocab), embed_dim=embed_dim,
                         hidden_dim=hidden_dim, n_layers=n_layers, dropout=dropout).to(device)
-        decoder = Decoder(target_vocab_size=len(d.tgt_vocab), embed_dim=embed_dim,
+        decoder = Decoder(target_vocab_size=len(d_train.tgt_vocab), embed_dim=embed_dim,
                         hidden_dim=hidden_dim, n_layers=n_layers, dropout=dropout).to(device)
 
         print("\nTraining {}_{} model\n".format(src_langs[lang_idx], tgt_langs[lang_idx]))
-        trained_model, train_losses, optimizer = train_model(encoder, decoder, d, epochs=num_epochs, lang_idx=lang_idx)
-
-        # test model on validation set
-        print("\nValidating {}_{} model\n".format(src_langs[lang_idx], tgt_langs[lang_idx]))
-        valid_losses = test_model(trained_model, lang_idx)
+        trained_model, train_losses, valid_losses, optimizer = train_model(encoder, decoder, d_train, d_valid, epochs=num_epochs, lang_idx=lang_idx)
 
         # Save model
         cwd = os.getcwd()
@@ -300,4 +309,50 @@ if __name__ == "__main__":
 
         save(specific_model_path, num_epochs, trained_model, optimizer, train_losses, valid_losses)
 
-    
+    # Evaluate
+
+    avg_test_losses = []
+    bleu_scores = []
+    labels = []
+
+    for lang_idx in range(0, len(src_langs)):
+
+        # Run trained models on the test sets and store average loss in state dictionary
+
+        d = IWSLT2017TransDataset(src_lang=src_langs[lang_idx], tgt_lang=tgt_langs[lang_idx], dataset_type='test')
+
+        encoder = Encoder(source_vocab_size=len(d.src_vocab), embed_dim=embed_dim,
+                            hidden_dim=hidden_dim, n_layers=n_layers, dropout=dropout).to(device)
+        decoder = Decoder(target_vocab_size=len(d.tgt_vocab), embed_dim=embed_dim,
+                        hidden_dim=hidden_dim, n_layers=n_layers, dropout=dropout).to(device)
+
+        seq2seq = Seq2Seq(encoder, decoder).to(device)
+        optimizer = optim.SGD(seq2seq.parameters(), lr=0.01)
+
+        model_path = os.path.join(os.getcwd(), 'models')
+        label = '{}_{}'.format(src_langs[lang_idx], tgt_langs[lang_idx])
+        labels.append(label)
+        current_model_path = os.path.join(model_path, label)
+
+        epoch, model, optimizer, losses = load(current_model_path, seq2seq, optimizer, device)
+
+        model = model.to(device)
+
+        # Calculate the test set losses and BLEU scores
+
+        avg_test_loss, bleu_score = test_model(model, d, bleu=True)
+
+        avg_test_losses.append(avg_test_loss)
+        bleu_scores.append(bleu_score)
+
+        with open(os.path.join(current_model_path, 'states.json'), 'r') as f:
+            states_dict = json.load(f)
+
+        states_dict["test_loss"] = avg_test_loss
+        states_dict["bleu"] = bleu_score
+
+        with open(os.path.join(current_model_path, 'states.json'), 'w') as f:
+            json.dump(states_dict, f)
+
+    showTable([avg_test_losses], labels, 'Test Set Losses')
+    showTable([bleu_scores], labels, 'Test Set Bleu Scores')
