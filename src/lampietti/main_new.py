@@ -11,7 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import optim
 from io import open
-from utils import IWSLT2017TransDataset, save
+from utils import IWSLT2017TransDataset, save, load
 from torch.autograd import Variable
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -19,9 +19,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 src_langs = ['en', 'de', 'it']
 tgt_langs = ['de', 'it', 'en']
 
-subset_size = 25000
-batch_size = 32
-num_epochs = 10
+subset_size = 25
+batch_size = 5
+num_epochs = 1
 embed_dim = 256
 hidden_dim = 512
 n_layers = 2
@@ -148,15 +148,15 @@ def timeSince(since, percent):
     rs = es - s
     return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
 
-def train_model(encoder, decoder, training_pairs, epochs, lang_idx, print_every=1000, plot_every=1000, learning_rate=0.01):
+def train_model(encoder, decoder, training_pairs, epochs, lang_idx, print_every=1000, learning_rate=0.01):
     seq2seq = Seq2Seq(encoder, decoder)
     seq2seq.train()
     decoding_helper = Teacher(teacher_forcing_ratio=0.5)
 
     start = time.time()
     plot_losses = []
+    epoch_losses = []
     print_loss_total = 0  # Reset every print_every
-    plot_loss_total = 0  # Reset every plot_every
 
     optimizer = optim.SGD(seq2seq.parameters(), lr=learning_rate)
 
@@ -164,6 +164,7 @@ def train_model(encoder, decoder, training_pairs, epochs, lang_idx, print_every=
     n_iters = math.ceil(subset_size / batch_size)
 
     for epoch in range(epochs):
+        total_loss = 0
         for iter in range(1, n_iters + 1):
             input_batch, target_batch = training_pairs.get_batch(batch_size, iter-1)
 
@@ -181,37 +182,27 @@ def train_model(encoder, decoder, training_pairs, epochs, lang_idx, print_every=
             optimizer.step()
 
             print_loss_total += loss
-            plot_loss_total += loss
+            total_loss += loss.item()
 
             if iter % print_every == 0:
                 print_loss_avg = print_loss_total / print_every
                 print_loss_total = 0
                 print('%s (%d %d%%) %.4f' % (timeSince(start, iter / n_iters),
                                             iter, iter / n_iters * 100, print_loss_avg))
-
-            if iter % plot_every == 0:
-                plot_loss_avg = plot_loss_total / plot_every
-                plot_losses.append(plot_loss_avg.item())
-                plot_loss_total = 0
-        print("Epoch_{} finished".format(epoch))
+    
+        print("Epoch {} finished with avg loss {}".format(epoch, total_loss / n_iters))
+        # store average loss for this epoch
+        epoch_losses.append(total_loss / n_iters)
     
     # Save loss graph
-    showPlot(plot_losses, lang_idx)
+    showPlot(epoch_losses, lang_idx)
 
-    # Save model
-    cwd = os.getcwd()
-    model_path = os.path.join(cwd, 'models')
-    specific_model_path = os.path.join(model_path, '{}_{}'.format(src_langs[lang_idx], tgt_langs[lang_idx]))
-    
-    os.makedirs(specific_model_path, exist_ok=True)
-    save(specific_model_path, epochs, seq2seq, optimizer, plot_losses)
-
-    return seq2seq
+    return seq2seq, epoch_losses, optimizer
 
 def test_model(seq2seq, lang_idx):
     # Get test results
     seq2seq.eval()
-    test_d = IWSLT2017TransDataset(src_lang=src_langs[lang_idx], tgt_lang=tgt_langs[lang_idx], dataset_type='test')
+    test_d = IWSLT2017TransDataset(src_lang=src_langs[lang_idx], tgt_lang=tgt_langs[lang_idx], dataset_type='valid')
     # Use greedy decoding helper to choose highest score
     decoding_helper_greedy = Greedy()
     decoding_helper_greedy.set_maxlen(49)
@@ -239,7 +230,9 @@ def test_model(seq2seq, lang_idx):
         # print("prediction: ", prediction)
         # print("target: ", target)
 
-    print("avg_loss: ", total_loss / n_iters)
+    avg_valid_loss = total_loss / n_iters
+    print("\navg_valid_loss {}\n".format(avg_valid_loss))
+    return avg_valid_loss
 
 
 def showPlot(points, lang_idx):
@@ -254,6 +247,26 @@ def showPlot(points, lang_idx):
 
 if __name__ == "__main__":
 
+    # Test loading
+
+    # d = IWSLT2017TransDataset(src_lang=src_langs[0], tgt_lang=tgt_langs[0], dataset_type='train')
+
+    # encoder = Encoder(source_vocab_size=len(d.src_vocab), embed_dim=embed_dim,
+    #                     hidden_dim=hidden_dim, n_layers=n_layers, dropout=dropout)
+    # decoder = Decoder(target_vocab_size=len(d.tgt_vocab), embed_dim=embed_dim,
+    #                 hidden_dim=hidden_dim, n_layers=n_layers, dropout=dropout)
+
+    # seq2seq = Seq2Seq(encoder, decoder)
+    # optimizer = optim.SGD(seq2seq.parameters(), lr=0.1)
+
+    # cwd = os.getcwd()
+    # model_path = os.path.join(cwd, 'models')
+    # specific_model_path = os.path.join(model_path, '{}_{}'.format(src_langs[0], tgt_langs[0]))
+
+    # epoch, model, optimizer, losses = load(specific_model_path, seq2seq, optimizer)
+
+    # valid_losses = test_model(model, 0)
+
     # Train and save the three models
     for lang_idx in range(len(src_langs)):
         # Get current src and tgt language data
@@ -264,9 +277,19 @@ if __name__ == "__main__":
         decoder = Decoder(target_vocab_size=len(d.tgt_vocab), embed_dim=embed_dim,
                         hidden_dim=hidden_dim, n_layers=n_layers, dropout=dropout)
 
-        trained_model = train_model(encoder, decoder, d, epochs=num_epochs, lang_idx=lang_idx)
+        print("\nTraining {}_{} model\n".format(src_langs[lang_idx], tgt_langs[lang_idx]))
+        trained_model, train_losses, optimizer = train_model(encoder, decoder, d, epochs=num_epochs, lang_idx=lang_idx)
 
-        # test model
-        test_model(trained_model, lang_idx)
+        # test model on validation set
+        print("\nValidating {}_{} model\n".format(src_langs[lang_idx], tgt_langs[lang_idx]))
+        valid_losses = test_model(trained_model, lang_idx)
+
+        # Save model
+        cwd = os.getcwd()
+        model_path = os.path.join(cwd, 'models')
+        specific_model_path = os.path.join(model_path, '{}_{}'.format(src_langs[lang_idx], tgt_langs[lang_idx]))
+        os.makedirs(specific_model_path, exist_ok=True)
+
+        save(specific_model_path, num_epochs, trained_model, optimizer, train_losses, valid_losses)
 
     
