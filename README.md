@@ -52,7 +52,7 @@ The parameters vary for different dataset since each dataset has different vocab
 * Example commands to reproduce our results can be found in the `src/chung/README.md`. Refer to `notebooks/chung/README.md` for the purpose of each notebook.
 
 ### Music Modeling Results
-Following the paper, we use the negative log-likelihood (NLL) of the predicted music sequence as a metric for model performance. This is the negative log-likelihood per timestep (not per note), and we take the average negative log-likelihood of all timesteps as the metric for the model's performance over the dataset. Here's a table of the NLL taken after training each model for 100 epochs:
+Following the paper, we use the negative log-likelihood (NLL) of the predicted music sequence as a metric for model performance. This is the negative log-likelihood per timestep (not per note), and we take the average negative log-likelihood of all timesteps as the metric for the model's performance over the dataset. Smaller NLL is better. Here's a table of the NLL taken after training each model for 100 epochs:
 
 | Dataset | Dataset Split | tanh | GRU | LSTM |
 |---------|---------------|------|-----|------|
@@ -72,7 +72,7 @@ Following the paper, we use the negative log-likelihood (NLL) of the predicted m
 | | valid | NaN | 4.8810 | 4.5163 |
 | | test | NaN | 4.9007 | **4.4937** |
 
-Contrary to the paper, we found LSTM to outperform GRU on most datasets. We found the models to also overfit quite quickly during training. The models converged quite early in the 20 to 30 epochs. Thus, if we measured the NLL for the test set for models trained with just 30 epochs instead of 100 epochs, we may see a difference in results. The following loss plots show the quick overfitting:
+Contrary to the paper, we found **LSTM to outperform GRU on most datasets**. We found the models to also overfit quite quickly during training. The models converged quite early in the 20 to 30 epochs. Thus, if we measured the NLL for the test set for models trained with just 30 epochs instead of 100 epochs, we may see a difference in results. The following loss and NLL plots show the quick overfitting:
 
 | JSB Chorales | |
 |-|-|
@@ -90,6 +90,16 @@ Contrary to the paper, we found LSTM to outperform GRU on most datasets. We foun
 |-|-|
 | ![Piano Loss](src/chung/img/piano_loss.jpg) | ![Piano NLL](src/chung/img/piano_nll.jpg) |
 
+The darker colors are the validation plots while the lighter colors are the training plots. Since we found LSTM to reach smaller NLLs on all datasets, we believe that the best LSTM model will likely have the smallest NLLs compared to the other models on the test sets as well.
+
+Even with gradient rescaling and clipping to norm 1, we found that all models were still prone to getting exploding gradients when the sequences are way too long. This is especially the case for Tanh RNNs, which got NaN weights after training for too long. We also found Tanh RNNs to overfit faster than LSTM and GRU RNNs.
+
+Here's some visualization of the models outputs on the JSB validation set during training for the first 80 epochs:
+
+| Gold | tanh |
+| ![Gold JSB Valid](src/chung/img/music-gold-jsb-valid.jpg) | ![tanh JSB Valid](src/chung/img/music-tanh-jsb-valid.gif) |
+| LSTM | GRU |
+| ![LSTM JSB Valid](src/chung/img/music-lstm-jsb-valid.jpg) | ![GRU JSB Valid](src/chung/img/music-gru-jsb-valid.jpg) |
 
 ### Machine Translation Results
 ### Conclusion
