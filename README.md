@@ -96,8 +96,24 @@ Even with gradient rescaling and clipping to norm 1, we found that all models we
 
 Here's some visualization of the models outputs on the JSB validation set during training for the first 80 epochs:
 
-| Gold | tanh |
-| ![Gold JSB Valid](src/chung/img/music-gold-jsb-valid.jpg) | ![tanh JSB Valid](src/chung/img/music-tanh-jsb-valid.gif) |
+<table>
+    <colgroup>
+        <col style="height: 50%"/>
+        <col style="height: 50%"/>
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="1">Gold</th>
+            <th colspan="1">tanh</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><img src="src/chung/img/music-gold-jsb-valid.jpg"/></td>
+            <td><img src="src/chung/img/music-tanh-jsb-valid.gif"/></td>
+        </tr>
+    </tbody>
+</table>
 | LSTM | GRU |
 | ![LSTM JSB Valid](src/chung/img/music-lstm-jsb-valid.gif) | ![GRU JSB Valid](src/chung/img/music-gru-jsb-valid.gif) |
 
