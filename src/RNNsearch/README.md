@@ -40,6 +40,7 @@ The model was trained on 3 different datasets from IWSLT2017. These datasets wer
 A subset of 25,000 samples was taken from each dataset for training for 10 epochs with a learning rate of 0.01 and a batch size of 32.
 The models were then evaluated during training on the validation sets (~1,000 samples).
 The average loss (cross-entropy) was calculated after each epoch of the training data as well as once through the validation data.
+The SGD optimizer was used during training.
 
 ## Training Results
 
