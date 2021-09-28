@@ -52,9 +52,9 @@ Italian to English task
 
 ![LSTM training losses for Italian to English](./images/seq2seq_losses_epochs20_it_en.png)
 
-Average BLEU score for each model
-
 English to German task on WMT'14
 
 ![LSTM training losses for English to German](./images/seq2seq_losses_epochs20_en_de_wmt14.png)
+
+Average BLEU score for each model
 
