@@ -44,7 +44,9 @@ The parameters vary for different dataset since each dataset has different vocab
 
 **Music Modeling Hyperparameters**: We mostly follow the paper in hyperparameter settings. The models are trained with RMSProp with learning rate of 0.001 and momentum of 0.9. We used Binary Cross Entropy loss as the criterion. We did not use weight decay. The norm of the gradient is rescaled to 1 at every update. We train for 500 epochs as described in the paper and saved the models every 100 epochs.
 
-**Translation Hyperparameters**: We stacked 2 layers of RNNs together for deeper representations. The models are trained with SGD with learning rate of 0.1 and momentum of 0.9. We used Cross Entropy loss as the criterion. We used weight decay of 0.0001 and gradient rescaling to 1. We train for 100 epochs and saved the models every 10 epochs.
+**Translation Hyperparameters**: We stacked 2 layers of RNNs together for deeper representations. The models are trained with SGD with learning rate of 0.1 and momentum of 0.9. We used Cross Entropy loss as the criterion. We used weight decay of 0.0001 and gradient rescaling to 1. We train for 100 epochs and saved the models every 10 epochs. For inference, we used a beam size of 12.
+
+Note that due to time constraints, we only trained on the first 25K examples of the training set (out of 200K examples).
 
 ### Code Organization
 * The code directory is `src/chung` and the notebook directory is `notebooks/chung`.
@@ -130,6 +132,42 @@ Here's some visualization of the models outputs on the JSB validation set during
 It seems that the tanh RNN have the most trouble learning the music. GRU learned the repeated chord structure of the music somewhat but can't learn the melodies (less as extended notes, constantly changing notes). LSTM learned the repeated chord structure of the music somewhat and some parts of the melodies. The same observations are typically found in training on the other datasets as well.
 
 ### Machine Translation Results
+We report the [BLEU score](https://en.wikipedia.org/wiki/BLEU), BiLingual Evaluation Understudy, as a performance metric for our model's translation. BLEU score compares a translated sentence to a list of reference translations and returns a score based on how well the translated sentence match. Here's a table of the BLEU scores after training for 10 epochs:
+
+| Dataset | Dataset Split | tanh | GRU | LSTM |
+|---------|---------------|------|-----|------|
+| IWSLT2017 English to German | valid | 2.1328 | 1.9314 | 2.0782 |
+| | test | **2.5734** | 2.1895 | 2.2425 |
+| IWSLT2017 German to Italian | valid | 1.0930 | 0.9610 | 0.9584 |
+| | test | **1.2864** | 1.0731 | 0.8819 |
+| IWSLT2017 Italian to English | valid | 2.2937 | 1.9187 | 1.6754 |
+| | test | 2.3136 | **2.3142** | 1.6200 |
+
+Here's a table of the BLEU scores for each model's best run:
+
+| Dataset | Dataset Split | tanh (20 Epochs) | GRU (50 Epochs) | LSTM (50 Epochs) |
+|---------|---------------|------|-----|------|
+| IWSLT2017 English to German | valid | 2.0738 | 2.8008 | 3.4278 |
+| | test | 2.7618 | 3.6364 | **4.3379** |
+| IWSLT2017 German to Italian | valid | 1.4667 | 1.6683 | 1.5129 |
+| | test | 1.1716 | 1.5171 | **1.6302** |
+| IWSLT2017 Italian to English | valid | 2.8931 | 3.4902 | 3.3751 |
+| | test | 2.8606 | **3.3979** | 3.3768 |
+
+We found that tanh RNN trained faster than GRU and LSTM for the first few epochs, which explains its performance in the first table. Since we only used the first 25K examples in the training set for training, overfitting heavily ensued. This is reflected both in BLEU scores and the following loss and NLL plots:
+
+| English to German | |
+|-|-|
+| ![en_de Loss](img/en_de_loss.jpg) | ![en_de NLL](img/en_de_nll.jpg) |
+
+| German to Italian | |
+|-|-|
+| ![de_it Loss](img/de_it_loss.jpg) | ![de_it NLL](img/de_it_nll.jpg) |
+
+| Italian to English | |
+|-|-|
+| ![it_en Loss](img/it_en_loss.jpg) | ![it_en NLL](img/it_en_nll.jpg) |
+
 ### Conclusion
 ### References
 [1] Boulanger-Lewandowski et al. [Modeling Temporal Dependencies in High-Dimensional Sequences: Application to Polyphonic Music Generation and Transcription](http://www-ens.iro.umontreal.ca/~boulanni/icml2012).
