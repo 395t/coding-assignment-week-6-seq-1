@@ -76,19 +76,19 @@ Contrary to the paper, we found LSTM to outperform GRU on most datasets. We foun
 
 | JSB Chorales | |
 |-|-|
-| ![JSB Loss](img/jsb_loss.jpg) | ![JSB NLL](img/jsb_nll.jpg) |
+| ![JSB Loss](src/chung/img/jsb_loss.jpg) | ![JSB NLL](src/chung/img/jsb_nll.jpg) |
 
 | MuseData | |
 |-|-|
-| ![Muse Loss](img/muse_loss.jpg) | ![JSB NLL](img/muse_nll.jpg) |
+| ![Muse Loss](src/chung/img/muse_loss.jpg) | ![JSB NLL](src/chung/img/muse_nll.jpg) |
 
 | Nottingham | |
 |-|-|
-| ![Nottingham Loss](img/nott_loss.jpg) | ![Nottingham NLL](img/nott_nll.jpg) |
+| ![Nottingham Loss](src/chung/img/nott_loss.jpg) | ![Nottingham NLL](src/chung/img/nott_nll.jpg) |
 
 | Piano-midi | |
 |-|-|
-| ![Piano Loss](img/piano_loss.jpg) | ![Piano NLL](img/piano_nll.jpg) |
+| ![Piano Loss](src/chung/img/piano_loss.jpg) | ![Piano NLL](src/chung/img/piano_nll.jpg) |
 
 
 ### Machine Translation Results
