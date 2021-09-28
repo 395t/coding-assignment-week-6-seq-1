@@ -42,9 +42,9 @@ Similarly for the translation task, but inputting and predicting 50 tokens at ma
 
 The parameters vary for different dataset since each dataset has different vocabularies, which means different output dimensions due to the different number of tokens in the vocabulary.
 
-**Music Modeling Hyperparameters**: We mostly follow the paper in hyperparameter settings. The models are trained with RMSProp with learning rate of 0.001 and momentum of 0.9. We used Binary Cross Entropy loss as the criterion. We did not use weight decay. The norm of the gradient is rescaled to 1 at every update.
+**Music Modeling Hyperparameters**: We mostly follow the paper in hyperparameter settings. The models are trained with RMSProp with learning rate of 0.001 and momentum of 0.9. We used Binary Cross Entropy loss as the criterion. We did not use weight decay. The norm of the gradient is rescaled to 1 at every update. We train for 500 epochs as described in the paper and saved the models every 100 epochs.
 
-**Translation Hyperparameters**: We stacked 2 layers of RNNs together for deeper representations. The models are trained with SGD with learning rate of 0.1 and momentum of 0.9. We used Cross Entropy loss as the criterion. We used weight decay of 0.0001 and gradient rescaling to 1.
+**Translation Hyperparameters**: We stacked 2 layers of RNNs together for deeper representations. The models are trained with SGD with learning rate of 0.1 and momentum of 0.9. We used Cross Entropy loss as the criterion. We used weight decay of 0.0001 and gradient rescaling to 1. We train for 100 epochs and saved the models every 10 epochs.
 
 ### Code Organization
 * The code directory is `src/chung` and the notebook directory is `notebooks/chung`.
@@ -52,7 +52,28 @@ The parameters vary for different dataset since each dataset has different vocab
 * Example commands to reproduce our results can be found in the `src/chung/README.md`. Refer to `notebooks/chung/README.md` for the purpose of each notebook.
 
 ### Music Modeling Results
-- Write-up of your findings and conclusions.
+Following the paper, we use the negative log-likelihood (NLL) of the predicted music sequence as a metric for model performance. This is the negative log-likelihood per timestep (not per note), and we take the average negative log-likelihood of all timesteps as the metric for the model's performance over the dataset. Here's a table of the NLL taken after training each model for 100 epochs:
+
+| Dataset | Dataset Split | tanh | GRU | LSTM |
+|---------|---------------|------|-----|------|
+| Notthingham | train | 3.4737 | 2.6263 | 2.2708 |
+| | valid | 3.3997 | 2.7426 | 2.5266 |
+| | test | 3.5345 | 2.7628 | **2.5464** |
+| JSB Chorales | train | 5.6582 | 4.6874 | 4.1984 |
+| | valid | 6.2460 | 6.1866 | 6.4905 |
+| | test | 6.3928 | **6.2018** | 6.4827 |
+| MuseData | train | NaN | 5.1844 | 4.9121 |
+| | valid | NaN | 5.6420 | 5.1642 |
+| | test | NaN | 5.9195 | **5.192** |
+| Piano-midi.de | train | 5.5251 | 5.0361 | 4.9867 |
+| | valid | 6.4411 | 6.9819 | 6.4961 |
+| | test | **5.7588** | 6.0350 | 5.8658 |
+| All Datasets Combined | train | NaN | 4.6592 | 4.3599 |
+| | valid | NaN | 4.8810 | 4.5163 |
+| | test | NaN | 4.9007 | **4.4937** |
+
+We found the models to overfit quite quickly during training.
+
 ### Machine Translation Results
 ### Conclusion
 ### References
