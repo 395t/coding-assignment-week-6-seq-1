@@ -8,7 +8,7 @@ I offer two sets of experiment tasks: music sequence modeling and seq2seq transl
 
 All code are meant to be run from this directory (training, models) to avoid missing dependencies and other errors.
 
-## Requirements
+## Dependencies
 * Python 3.6.13
 * PyTorch 1.9.1
 * Torchtext 0.10.1
@@ -21,14 +21,15 @@ All code are meant to be run from this directory (training, models) to avoid mis
 * TorchsummaryX 1.3.0
 * tqdm 4.62.3
 
-## Data Prerequisites
+### Data Prerequisites
+Some spacy tokenizers are needed for the translation tasks:
 ```bash
 python3 -m spacy download en_core_web_sm
 python3 -m spacy download de_core_news_sm
 python3 -m spacy download it_core_news_sm
 ```
 
-You can get the dependencies and data by running `./prereq.sh`. Make sure you have Python 3.6.13 installed.
+You can get the dependencies and data prerequisites by running `./prereq.sh`. Make sure you have Python 3.6.13 installed.
 
 ## Music Sequence Modeling Training
 Here's an example training run:
@@ -95,6 +96,25 @@ Which corresponds to the following:
 * Verbose output (output per epoch loss and per epoch NLL to command line)
 
 For other training arguments, refer to `train.py`.
+
+## Results
+
+### Music Sequence Modeling
+| JSB Chorales | |
+|-|-|
+| ![JSB Loss](img/jsb_loss.jpg) | ![JSB NLL](img/jsb_nll.jpg) |
+
+| MuseData | |
+|-|-|
+| ![Muse Loss](img/muse_loss.jpg) | ![JSB NLL](img/muse_nll.jpg) |
+
+| Nottingham | |
+|-|-|
+| ![Nottingham Loss](img/nott_loss.jpg) | ![Nottingham NLL](img/nott_nll.jpg) |
+
+| Piano-midi | |
+|-|-|
+| ![Piano Loss](img/piano_loss.jpg) | ![Piano NLL](img/piano_nll.jpg) |
 
 ## Data Sources
 For the music datasets (JSB, MuseData, Piano-midi, Nottingham), refer to the [TCN repository](https://github.com/locuslab/TCN/tree/master/TCN/poly_music). TCN, or Temporal Convolutional Networks, can be found in the work [An Empirical Evaluation of Generic Convolutional and Recurrent Networks for Sequence Modeling](https://arxiv.org/abs/1803.01271). You can cite their work with:
