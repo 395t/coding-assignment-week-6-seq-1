@@ -46,6 +46,8 @@ The parameters vary for different dataset since each dataset has different vocab
 
 **Translation Hyperparameters**: We stacked 2 layers of RNNs together for deeper representations. The models are trained with SGD with learning rate of 0.1 and momentum of 0.9. We used Cross Entropy loss as the criterion. We used weight decay of 0.0001 and gradient rescaling to 1. We train for 100 epochs and saved the models every 10 epochs. For inference, we used a beam size of 12.
 
+It should be noted that the stop tokens (`<EOS_IDX>`) and unknown tokens (`<UNK_IDX>`) are super common in the dataset. So, we applied a weight of 0.1 for each on the Cross Entropy loss during training and that helped resolving early stopping and outputting unknown tokens often.
+
 Note that due to time constraints, we only trained on the first 25K examples of the training set (out of 200K examples).
 
 ### Code Organization
@@ -131,6 +133,8 @@ Here's some visualization of the models outputs on the JSB validation set during
 
 It seems that the tanh RNN have the most trouble learning the music. GRU learned the repeated chord structure of the music somewhat but can't learn the melodies (less as extended notes, constantly changing notes). LSTM learned the repeated chord structure of the music somewhat and some parts of the melodies. The same observations are typically found in training on the other datasets as well.
 
+For more visualizations, please refer to the notebook `notebooks/chung/training_visualizations.ipynb`.
+
 ### Machine Translation Results
 We report the [BLEU score](https://en.wikipedia.org/wiki/BLEU), BiLingual Evaluation Understudy, as a performance metric for our model's translation. BLEU score compares a translated sentence to a list of reference translations and returns a score based on how well the translated sentence match. Here's a table of the BLEU scores after training for 10 epochs:
 
@@ -143,7 +147,7 @@ We report the [BLEU score](https://en.wikipedia.org/wiki/BLEU), BiLingual Evalua
 | IWSLT2017 Italian to English | valid | 2.2937 | 1.9187 | 1.6754 |
 | | test | 2.3136 | **2.3142** | 1.6200 |
 
-Here's a table of the BLEU scores for each model's best run:
+Here's a table of the BLEU scores for each model's best run (measured by BLEU on validation):
 
 | Dataset | Dataset Split | tanh (20 Epochs) | GRU (50 Epochs) | LSTM (50 Epochs) |
 |---------|---------------|------|-----|------|
@@ -168,7 +172,13 @@ We found that tanh RNN trained faster than GRU and LSTM for the first few epochs
 |-|-|
 | ![it_en Loss](src/chung/img/it_en_loss.jpg) | ![it_en NLL](src/chung/img/it_en_nll.jpg) |
 
+Overall, LSTM performed the best in translation. For some datasets, GRU and LSTM performed comparably. All models seem to have converged around 20 epochs, but there are improvements in the BLEU scores by overfitting somewhat after convergence.
+
+According to the visualizations shown in `notebooks/chung/training_visualizations.ipynb`, the models are best at translating common words such as 'the' and 'and'. Arbitrary translation inference can be found at `notebooks/chung/translation_inference.ipynb`.
+
 ### Conclusion
+We generally found LSTM to outperform all the other models for all tasks. GRU and LSTM seemed to perform comparably on certain datasets. Visualizations show that the models usually learned the most common and repeated part of the sequences.
+
 ### References
 [1] Boulanger-Lewandowski et al. [Modeling Temporal Dependencies in High-Dimensional Sequences: Application to Polyphonic Music Generation and Transcription](http://www-ens.iro.umontreal.ca/~boulanni/icml2012).
 
