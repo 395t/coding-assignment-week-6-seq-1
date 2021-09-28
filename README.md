@@ -270,7 +270,7 @@ According to the visualizations shown in `notebooks/chung/training_visualization
 We generally found LSTM to outperform all the other models for all tasks. GRU and LSTM seemed to perform comparably on certain datasets. Visualizations show that the models usually learned the most common and repeated part of the sequences.
 
 ## Overall Conclusion
-Due to GPU memory and time constraints, we only used 25K examples of training data to train our models, and that caused our models to overfit in general. We found LSTM to generally outperform other models for most of the experiments. Pre-trained and transformer and attention models may do better if they're fine-tuned, but training a transformer from scratch took a long time and also lead to overfitting. Also due to overfitting and different model sizes in parameters, our models are truly comparable.
+Due to GPU memory and time constraints, we only used 25K examples of training data to train our models, and that caused our models to overfit in general. We found LSTM to generally outperform other models for most of the experiments. Pre-trained and transformer and attention models may do better if they're fine-tuned, but training a transformer from scratch took a long time and also lead to overfitting. Also, due to overfitting and different model sizes in parameters, our models are not truly comparable.
 
 ----
 ## References
