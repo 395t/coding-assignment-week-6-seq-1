@@ -113,9 +113,19 @@ Here's some visualization of the models outputs on the JSB validation set during
             <td><img src="src/chung/img/music-tanh-jsb-valid.gif"/></td>
         </tr>
     </tbody>
+    <thead>
+        <tr>
+            <th colspan="1">LSTM</th>
+            <th colspan="1">GRU</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><img src="src/chung/img/music-lstm-jsb-valid.gif"/></td>
+            <td><img src="src/chung/img/music-gru-jsb-valid.gif"/></td>
+        </tr>
+    </tbody>
 </table>
-| LSTM | GRU |
-| ![LSTM JSB Valid](src/chung/img/music-lstm-jsb-valid.gif) | ![GRU JSB Valid](src/chung/img/music-gru-jsb-valid.gif) |
 
 ### Machine Translation Results
 ### Conclusion
