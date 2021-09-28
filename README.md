@@ -17,18 +17,18 @@ The code for each can be found in the following folders:
 We used the IWSLT2017 translation dataset [2, 5]. Specifically, we measured the performance of our models on the English to German, German to Italian, and Italian to English datasets in the IWSLT2017 dataset. 
 
 ----
-## Sequence to Sequence Learning using deep LSTM encoder decoder
+## Sequence to Sequence Learning using Deep LSTM Encoder-Decoder
 
-## LSTM models
+### LSTM models
 
 The model uses deep LSTMs with an encoder decoder architecture. The encoder maps the source sequence to a fixed space and the decoder sequence decodes it from the fixed sequence to the target language. We decode with the target length being known. So during inference time, we set teacher forcing ratio to 0. This results in the decoder running for the length of the target sentence.
 
-## Training
+### Training
 For the translation task, due to memory and hardware constraints, we use a subset of the IWSLT dataset. We use the first 25000 examples of the training, first 5000 of the validation and 5000 of the test dataset. We run the training for 20 epochs with a learning rate of 0.001 for ADAM. The average cross entropy loss was calculated after each epoch for both training and validation data.
 
 We train 3 different models for translation from en->de, de->it and it->en
 
-## Results
+### Results
 
 The LSTMs overfit to the first 25000 examples causing it to do worse in the validation and test dataset. When running on a smaller dataset such as WMT'14, we did not see this issue. If given the full training set, it may have generalized better over each epoch and done well on the test and validation set.
 
@@ -55,7 +55,7 @@ Average BLEU score for each model
 | 0.23% | 0.14% | 0.31% |
 
 ----
-## Gated Recurrent Neural Networks on Sequence Modeling
+## Attention is All You Need
 
 English to German task
 
