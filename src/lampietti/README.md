@@ -23,6 +23,11 @@ python3 -m spacy download de_core_news_sm
 python3 -m spacy download it_core_news_sm
 ```
 
+## Running
+
+The model hyper-parameters can be edited in hyper_params.py as well as boolean values for 'train', 'evaluate', and whether to visualize results with 'make_plots'.
+Then execute main.py to train/evaluate the models.
+
 ## RNNsearch Model
 
 The model builds off of the standard encoder-decoder model for neural machine translation. The paper points out a bottleneck in these models by encoding the source sentence into a fixed length vector. To achieve better performance, especially with longer sentences, the input sentence is instead encoded into a sequence of context vectors that the decoder then adaptively picks out a subset from. 
