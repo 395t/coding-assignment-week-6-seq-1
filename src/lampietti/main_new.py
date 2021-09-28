@@ -21,9 +21,9 @@ print("device: {}".format(device))
 src_langs = ['en', 'de', 'it']
 tgt_langs = ['de', 'it', 'en']
 
-subset_size = 25000
-batch_size = 32
-num_epochs = 10
+subset_size = 25
+batch_size = 5
+num_epochs = 1
 embed_dim = 256
 hidden_dim = 512
 n_layers = 2
@@ -151,7 +151,7 @@ def timeSince(since, percent):
     return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
 
 def train_model(encoder, decoder, training_pairs, epochs, lang_idx, print_every=1000, learning_rate=0.01):
-    seq2seq = Seq2Seq(encoder, decoder)
+    seq2seq = Seq2Seq(encoder, decoder).to(device)
     seq2seq.train()
     decoding_helper = Teacher(teacher_forcing_ratio=0.5)
 
@@ -169,6 +169,9 @@ def train_model(encoder, decoder, training_pairs, epochs, lang_idx, print_every=
         total_loss = 0
         for iter in range(1, n_iters + 1):
             input_batch, target_batch = training_pairs.get_batch(batch_size, iter-1)
+            
+            input_batch.to(device)
+            target_batch.to(device)
 
             optimizer.zero_grad()
 
@@ -197,7 +200,7 @@ def train_model(encoder, decoder, training_pairs, epochs, lang_idx, print_every=
         epoch_losses.append(total_loss / n_iters)
     
     # Save loss graph
-    showPlot(epoch_losses, lang_idx)
+    # showPlot(epoch_losses, lang_idx)
 
     return seq2seq, epoch_losses, optimizer
 
@@ -214,6 +217,9 @@ def test_model(seq2seq, lang_idx):
     total_loss = 0
     for iter in range(1, n_iters + 1):
         input_batch, target_batch = test_d.get_batch(batch_size, iter-1)
+
+        input_batch.to(device)
+        target_batch.to(device)
         
         outputs, masks = seq2seq(input_batch, decoding_helper_greedy)
 
@@ -275,9 +281,9 @@ if __name__ == "__main__":
         d = IWSLT2017TransDataset(src_lang=src_langs[lang_idx], tgt_lang=tgt_langs[lang_idx], dataset_type='train')
 
         encoder = Encoder(source_vocab_size=len(d.src_vocab), embed_dim=embed_dim,
-                        hidden_dim=hidden_dim, n_layers=n_layers, dropout=dropout)
+                        hidden_dim=hidden_dim, n_layers=n_layers, dropout=dropout).to(device)
         decoder = Decoder(target_vocab_size=len(d.tgt_vocab), embed_dim=embed_dim,
-                        hidden_dim=hidden_dim, n_layers=n_layers, dropout=dropout)
+                        hidden_dim=hidden_dim, n_layers=n_layers, dropout=dropout).to(device)
 
         print("\nTraining {}_{} model\n".format(src_langs[lang_idx], tgt_langs[lang_idx]))
         trained_model, train_losses, optimizer = train_model(encoder, decoder, d, epochs=num_epochs, lang_idx=lang_idx)
