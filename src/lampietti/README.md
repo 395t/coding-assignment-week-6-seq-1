@@ -32,7 +32,7 @@ The model consists of a bidirectional RNN as the encoder for the source sentence
 ## Training
 
 The model was trained on 3 different datasets from IWSLT2017. These datasets were English (en) to German (de), German to Italian (it), and Italian to English.
-A subset of 25,000 samples was taken from each dataset for training for 10 epochs.
+A subset of 25,000 samples was taken from each dataset for training for 10 epochs with a learning rate of 0.01 and a batch size of 32.
 The models were then evaluated during training on the validation sets (~1,000 samples).
 The average loss (NLL) was calculated after each epoch of the training data as well as once through the validation data.
 
@@ -40,7 +40,7 @@ The average loss (NLL) was calculated after each epoch of the training data as w
 
 The following results were obtained on 25,000 training samples and ~1,000 validation samples.
 For all models, the rate at which the loss decreases slows down at around the fourth epoch. Also the validation and training losses have similar trajectories.
-Given stronger computing resources and more time, it is likely much lower losses could be achieved with more samples and epochs.
+Given stronger computing resources and more time, it is likely lower losses could be achieved with additional epochs.
 
 ![en_de](https://user-images.githubusercontent.com/7085644/135036193-e2af7a2f-3e2e-4d58-bd78-4151a86eeb0b.png)
 
@@ -50,7 +50,15 @@ Given stronger computing resources and more time, it is likely much lower losses
 
 ## Testing Results
 
+After training each of the three models (en-de, de-it, it-en) with the tuned hyper-parameters described in the training section, the following NLL loss results were achieved on the test sets.
+These losses show that the models were relatively consistent in loss performance.
 
+![test_set_losses](https://user-images.githubusercontent.com/7085644/135044503-604481e6-0b63-43d0-a1ea-80cb6edc82b4.PNG)
+
+The Bleu scores were then calculated for each of the three models.
+However these scores were very low, likely due to a long sentence size of 50 tokens allowed and limited computing power to train beyond 10 epochs on a small subset of the data, therefore the model makes innaccurate translations of the source sentences.
+
+![test_set_bleu](https://user-images.githubusercontent.com/7085644/135053058-c88b747c-227f-4ec5-8709-8bcc6d5de241.PNG)
 
 ## Data Sources
 
