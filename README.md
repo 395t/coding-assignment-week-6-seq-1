@@ -72,7 +72,24 @@ Following the paper, we use the negative log-likelihood (NLL) of the predicted m
 | | valid | NaN | 4.8810 | 4.5163 |
 | | test | NaN | 4.9007 | **4.4937** |
 
-We found the models to overfit quite quickly during training.
+Contrary to the paper, we found LSTM to outperform GRU on most datasets. We found the models to also overfit quite quickly during training. The models converged quite early in the 20 to 30 epochs. Thus, if we measured the NLL for the test set for models trained with just 30 epochs instead of 100 epochs, we may see a difference in results. The following loss plots show the quick overfitting:
+
+| JSB Chorales | |
+|-|-|
+| ![JSB Loss](img/jsb_loss.jpg) | ![JSB NLL](img/jsb_nll.jpg) |
+
+| MuseData | |
+|-|-|
+| ![Muse Loss](img/muse_loss.jpg) | ![JSB NLL](img/muse_nll.jpg) |
+
+| Nottingham | |
+|-|-|
+| ![Nottingham Loss](img/nott_loss.jpg) | ![Nottingham NLL](img/nott_nll.jpg) |
+
+| Piano-midi | |
+|-|-|
+| ![Piano Loss](img/piano_loss.jpg) | ![Piano NLL](img/piano_nll.jpg) |
+
 
 ### Machine Translation Results
 ### Conclusion
