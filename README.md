@@ -1,6 +1,20 @@
 # Sequence Models - Week 6 Group 1
 
-## Summary
+Our group covered the following sequence models and papers,
+
+* LSTM: [Sequence to Sequence Learning with Neural Networks](https://arxiv.org/abs/1409.3215), Sutskever, Vinyals, Le; 2014
+* GRU: [Empirical Evaluation of Gated Recurrent Neural Networks on Sequence Modeling](https://arxiv.org/abs/1412.3555), Chung, Gulcehre, Cho, Bengio; 2014
+* LSTM with Attention: [Neural Machine Translation by Jointly Learning to Align and Translate](https://arxiv.org/abs/1409.0473), Bahdanau, Cho, Bengio; 2014
+* Transformer: [Attention Is All You Need](https://arxiv.org/abs/1706.03762), Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez, Kaiser, Polosukhin; 2017
+
+The code for each can be found in the following folders:
+* LSTM: code in `src/sutskever`.
+* GRU: code in `src/chung`, notebooks in `notebooks/chung`.
+* LSTM with Attention: code in `src/RNNsearch`.
+* Transformer: notebooks in `notebooks/vaswani`.
+
+## Dataset
+We used the IWSLT2017 translation dataset [2, 5]. Specifically, we measured the performance of our models on the English to German, German to Italian, and Italian to English datasets in the IWSLT2017 dataset. 
 
 ----
 ## Sequence to Sequence Learning using deep LSTM encoder decoder
