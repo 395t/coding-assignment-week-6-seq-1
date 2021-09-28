@@ -1,0 +1,11 @@
+log
+saved
+*__pycache__*
+*.ipynb_checkpoints*
+condor_run.sh
+run_lm_set.sh
+run_trans_set.sh
+exp/music/piano/gru_exp
+*infer.log
+*infer.out
+*.pt
