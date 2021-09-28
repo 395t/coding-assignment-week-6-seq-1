@@ -73,6 +73,9 @@ Italian to English task
 
 ## Neural Machine translation
 
+After training each of the three models (en-de, de-it, it-en) with the tuned hyper-parameters, the following NLL loss results were achieved on the test sets.
+These losses show that the models were relatively consistent in loss performance.
+
 English to German task
 
 ![training losses for English to German](./images/en_de.png)
@@ -84,3 +87,24 @@ German to Italian task
 Italian to English task
 
 ![training losses for Italian to English](./images/it_en.png)
+
+The Bleu scores were then calculated for each of the three models.
+However these scores were very low, likely due to a long sentence size of 50 tokens allowed and limited computing power to train beyond 10 epochs on a small subset of the data, therefore the model makes innaccurate translations of the source sentences.
+
+![test_set_bleu](https://user-images.githubusercontent.com/7085644/135053058-c88b747c-227f-4ec5-8709-8bcc6d5de241.PNG)
+
+## Data Sources
+
+For the IWSLT2017 datasets, refer to the [PyTorch tutorial](https://pytorch.org/tutorials/beginner/translation_transformer.html) for preprocessing code used in this repository. The IWSLT2017 dataset is from the paper [WIT3: Web Inventory of Transcribed and Translated Talks](https://aclanthology.org/2012.eamt-1.60.pdf). You can cite their work with:
+```
+@inproceedings{cettoloEtAl:EAMT2012,
+    Address = {Trento, Italy},
+    Author = {Mauro Cettolo and Christian Girardi and Marcello Federico},
+    Booktitle = {Proceedings of the 16$^{th}$ Conference of the European Association for Machine Translation (EAMT)},
+    Date = {28-30},
+    Month = {May},
+    Pages = {261--268},
+    Title = {WIT$^3$: Web Inventory of Transcribed and Translated Talks},
+    Year = {2012},
+}
+```
