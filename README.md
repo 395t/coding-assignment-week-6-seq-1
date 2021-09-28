@@ -44,11 +44,11 @@ Italian to English task
 
 ![LSTM training losses for Italian to English](./images/seq2seq_losses_epochs20_it_en.png)
 
-English to German task on WMT'14
+English to German task on Multi30k
 
 ![LSTM training losses for English to German](./images/seq2seq_losses_epochs20_en_de_wmt14.png)
 
-Average BLEU score for each model
+Average BLEU score for each model trained on IWSLT
 
 |`en_de` | `de_it` | `it_en` |
 |---------|---------|---------|
