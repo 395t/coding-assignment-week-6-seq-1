@@ -22,6 +22,7 @@ https://pytorch.org/tutorials/beginner/translation_transformer.html
 
 https://github.com/bentrevett/pytorch-seq2seq/blob/master/1%20-%20Sequence%20to%20Sequence%20Learning%20with%20Neural%20Networks.ipynb
 
+For the implementation of Bahdanau, Cho, and Bengio's [paper](https://arxiv.org/pdf/1409.0473v7.pdf) the code was adapted from Austin Jacobson's neural machine translation network linked [here](https://github.com/A-Jacobson/minimal-nmt)
 
 For the translation task we used the dataset IWSLT 2017 in torchtext and Multi30k.
 
