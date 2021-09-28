@@ -158,15 +158,15 @@ We found that tanh RNN trained faster than GRU and LSTM for the first few epochs
 
 | English to German | |
 |-|-|
-| ![en_de Loss](img/en_de_loss.jpg) | ![en_de NLL](img/en_de_nll.jpg) |
+| ![en_de Loss](src/chung/img/en_de_loss.jpg) | ![en_de NLL](src/chung/img/en_de_nll.jpg) |
 
 | German to Italian | |
 |-|-|
-| ![de_it Loss](img/de_it_loss.jpg) | ![de_it NLL](img/de_it_nll.jpg) |
+| ![de_it Loss](src/chung/img/de_it_loss.jpg) | ![de_it NLL](src/chung/img/de_it_nll.jpg) |
 
 | Italian to English | |
 |-|-|
-| ![it_en Loss](img/it_en_loss.jpg) | ![it_en NLL](img/it_en_nll.jpg) |
+| ![it_en Loss](src/chung/img/it_en_loss.jpg) | ![it_en NLL](src/chung/img/it_en_nll.jpg) |
 
 ### Conclusion
 ### References
