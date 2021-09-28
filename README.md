@@ -127,6 +127,8 @@ Here's some visualization of the models outputs on the JSB validation set during
     </tbody>
 </table>
 
+It seems that the tanh RNN have the most trouble learning the music. GRU learned the repeated chord structure of the music somewhat but can't learn the melodies (less as extended notes, constantly changing notes). LSTM learned the repeated chord structure of the music somewhat and some parts of the melodies. The same observations are typically found in training on the other datasets as well.
+
 ### Machine Translation Results
 ### Conclusion
 ### References
