@@ -100,19 +100,19 @@ For other training arguments, refer to `train.py`.
 ## Results
 
 ### Music Sequence Modeling
-| JSB Chorales | |
+| JSB Chorales |
 |-|-|
 | ![JSB Loss](img/jsb_loss.jpg) | ![JSB NLL](img/jsb_nll.jpg) |
 
-| MuseData | |
+| MuseData |
 |-|-|
 | ![Muse Loss](img/muse_loss.jpg) | ![JSB NLL](img/muse_nll.jpg) |
 
-| Nottingham | |
+| Nottingham |
 |-|-|
 | ![Nottingham Loss](img/nott_loss.jpg) | ![Nottingham NLL](img/nott_nll.jpg) |
 
-| Piano-midi | |
+| Piano-midi |
 |-|-|
 | ![Piano Loss](img/piano_loss.jpg) | ![Piano NLL](img/piano_nll.jpg) |
 
