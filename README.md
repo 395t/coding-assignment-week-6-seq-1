@@ -17,7 +17,9 @@ The summary can contain but is not limited to:
 Any code that you borrow or other reference should be properly cited.
 
 For the sequence to sequence paper by Sutskever et al, the code from the below 2 sources were used:
+
 https://pytorch.org/tutorials/beginner/translation_transformer.html
+
 https://github.com/bentrevett/pytorch-seq2seq/blob/master/1%20-%20Sequence%20to%20Sequence%20Learning%20with%20Neural%20Networks.ipynb
 
 
@@ -34,12 +36,16 @@ https://github.com/bentrevett/pytorch-seq2seq/blob/master/1%20-%20Sequence%20to%
 Transformers
 
 ![Transformer training losses for English to German] (./images/en_de_transformer.png)
+
 ![Transformer training losses for German to Italian] (./images/de_it_transformer.png)
+
 ![Transformer training losses for Italian to English] (./images/it_en_transformer.png)
 
 
 Neural Machine translation
 
 ![training losses for English to German] (./images/en_de.png)
+
 ![training losses for German to Italian] (./images/de_it.png)
+
 ![training losses for Italian to English](./images/it_en.png)
