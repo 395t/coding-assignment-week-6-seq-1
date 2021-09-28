@@ -1,7 +1,7 @@
-torch==1.9.1
-torchtext==0.10.1
-scipy==1.6.3
-spacy==3.1.3
-nltk==3.6.2
-matplotlib==3.4.2
-tqdm==4.60.0
+torch
+torchtext
+scipy
+spacy
+nltk
+matplotlib
+tqdm
