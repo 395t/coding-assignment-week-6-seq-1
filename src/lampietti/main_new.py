@@ -16,6 +16,8 @@ from torch.autograd import Variable
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+print("device: {}".format(device))
+
 src_langs = ['en', 'de', 'it']
 tgt_langs = ['de', 'it', 'en']
 
