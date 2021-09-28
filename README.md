@@ -146,7 +146,7 @@ Note that due to time constraints, we only trained on the first 25K examples of 
 * Example commands to reproduce our results can be found in the `src/chung/README.md`. Refer to `notebooks/chung/README.md` for the purpose of each notebook.
 
 ### Music Modeling Results
-Following the paper, we use the negative log-likelihood (NLL) of the predicted music sequence as a metric for model performance. This is the negative log-likelihood per timestep (not per note), and we take the average negative log-likelihood of all timesteps as the metric for the model's performance over the dataset. Smaller NLL is better. Here's a table of the NLL taken after training each model for 100 epochs:
+Following the paper, we use the negative log-likelihood (NLL) of the ground truth music sequence in the predicted sequence as a metric for model performance. This is the negative log-likelihood per timestep (not per note), and we take the average negative log-likelihood of all timesteps as the metric for the model's performance over the dataset. Smaller NLL is better. Here's a table of the NLL taken after training each model for 100 epochs:
 
 | Dataset | Dataset Split | tanh | GRU | LSTM |
 |---------|---------------|------|-----|------|
