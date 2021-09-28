@@ -22,24 +22,24 @@ https://github.com/bentrevett/pytorch-seq2seq/blob/master/1%20-%20Sequence%20to%
 
 
 
-[LSTM training losses for German to Italian](./images/seq2seq_losses_epochs20_de_it.png)
+![LSTM training losses for German to Italian](./images/seq2seq_losses_epochs20_de_it.png)
 
-[LSTM training losses for Italian to English](./images/seq2seq_losses_epochs20_it_en.png)
+![LSTM training losses for Italian to English](./images/seq2seq_losses_epochs20_it_en.png)
 
-[LSTM training losses for English to German](./images/seq2seq_losses_epochs20_de_it.png)
+![LSTM training losses for English to German](./images/seq2seq_losses_epochs20_de_it.png)
 
 
 
 
 Transformers
 
-[Transformer training losses for English to German] (./images/en_de_transformer.png)
-[Transformer training losses for German to Italian] (./images/de_it_transformer.png)
-[Transformer training losses for Italian to English] (./images/it_en_transformer.png)
+![Transformer training losses for English to German] (./images/en_de_transformer.png)
+![Transformer training losses for German to Italian] (./images/de_it_transformer.png)
+![Transformer training losses for Italian to English] (./images/it_en_transformer.png)
 
 
 Neural Machine translation
 
-[training losses for English to German] (./images/en_de.png)
-[training losses for German to Italian] (./images/de_it.png)
-[training losses for Italian to English](./images/it_en.png)
+![training losses for English to German] (./images/en_de.png)
+![training losses for German to Italian] (./images/de_it.png)
+![training losses for Italian to English](./images/it_en.png)
