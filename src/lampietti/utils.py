@@ -4,6 +4,7 @@ import os
 import torch
 import numpy as np
 import torch.nn.functional as F
+import matplotlib.pyplot as plt
 
 from scipy.io import loadmat
 from torch.utils.data import Dataset, BatchSampler
@@ -23,66 +24,6 @@ spacy_lang = {
 }
 UNK_IDX, PAD_IDX, BOS_IDX, EOS_IDX = 0, 1, 2, 3
 special_symbols = ['<unk>', '<pad>', '<bos>', '<eos>']
-
-# Source: https://github.com/locuslab/TCN/blob/master/TCN/poly_music/utils.py
-def music_dataloader(dataset, prefix="."):
-    if dataset == "JSB":
-        print('loading JSB data...')
-        data = loadmat(os.path.join(prefix, 'data/music/JSB_Chorales.mat'))
-    elif dataset == "Muse":
-        print('loading Muse data...')
-        data = loadmat(os.path.join(prefix, 'data/music/MuseData.mat'))
-    elif dataset == "Nott":
-        print('loading Nott data...')
-        data = loadmat(os.path.join(prefix, 'data/music/Nottingham.mat'))
-    elif dataset == "Piano":
-        print('loading Piano data...')
-        data = loadmat(os.path.join(prefix, 'data/music/Piano_midi.mat'))
-    else:
-        raise ValueError(f"No data for '{dataset}' found. Possible datasets from: JSB, Muse, Nott, Piano.")
-
-    X_train = data['traindata'][0]
-    X_valid = data['validdata'][0]
-    X_test = data['testdata'][0]
-
-    for data in [X_train, X_valid, X_test]:
-        for i in range(len(data)):
-            data[i] = torch.Tensor(data[i].astype(np.float64))
-
-    return X_train, X_valid, X_test
-
-
-def _music_data_collate(batch):
-    X = pad_sequence([b[0] for b in batch])
-    y = pad_sequence([b[1] for b in batch])
-    return X, y
-
-
-class MusicDataset(Dataset):
-    def __init__(self, dataset_name, dataset_type='train'):
-        data_index = {'train': 0, 'valid': 1, 'test': 2}
-        idx = data_index[dataset_type]
-        if dataset_name == 'all':
-            self.data = np.array([])
-            for dataset in ("JSB", "Muse", "Nott", "Piano"):
-                self.data = np.append(self.data, music_dataloader(dataset)[idx])
-        else:
-            self.data = music_dataloader(dataset_name)[idx]
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, idx):
-        X = self.data[idx][:-1]
-        y = self.data[idx][1:]
-        return X, y
-
-
-def _iwslt2017trans_data_collate(batch):
-    X = pad_sequence([b[0] for b in batch], padding_value=PAD_IDX)
-    y = pad_sequence([b[1] for b in batch], padding_value=PAD_IDX)
-    return X, y
-
 
 # Part of this dataset script use information from: https://pytorch.org/tutorials/beginner/translation_transformer.html
 class IWSLT2017TransDataset(Dataset):
@@ -270,6 +211,30 @@ def _compute_bleu(model, data, device, subset=None):
         bleu_scores.append(score)
     return sum(bleu_scores) / len(bleu_scores)
 
+def makePlot(data, title):
+    train_y = data[0]
+    valid_y = data[1]
+
+    x = [i for i in range(len(train_y))]
+
+    plt.plot(x, train_y, label = "Train")
+    plt.plot(x, valid_y, label = "Valid")
+    plt.title('Model {} Loss'.format(title))
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.show()
+
+def showTable(data, labels, title):
+    fig, ax = plt.subplots()
+    # hide axes
+    fig.patch.set_visible(False)
+    ax.axis('off')
+    ax.axis('tight')
+    ax.table(cellText=data, colLabels=labels, loc='center')
+    plt.title(title)
+    fig.tight_layout()
+    plt.show()
 
 def save(save_dir, epoch, model, optim, train_losses, valid_losses, bleu_score=None):
     # states_dict = {
