@@ -30,6 +30,8 @@ hidden_dim = 512
 n_layers = 2
 dropout = 0.5
 
+make_plots = False
+
 class Encoder(nn.Module):
     def __init__(self, source_vocab_size, embed_dim, hidden_dim, n_layers, dropout):
         super(Encoder, self).__init__()
@@ -160,7 +162,6 @@ def train_model(encoder, decoder, training_pairs, validation_pairs, epochs, lang
     plot_losses = []
     epoch_losses = []
     valid_losses = []
-    print_loss_total = 0  # Reset every print_every
 
     optimizer = optim.SGD(seq2seq.parameters(), lr=learning_rate)
 
@@ -189,14 +190,7 @@ def train_model(encoder, decoder, training_pairs, validation_pairs, epochs, lang
 
             optimizer.step()
 
-            print_loss_total += loss
             total_loss += loss.item()
-
-            if iter % print_every == 0:
-                print_loss_avg = print_loss_total / print_every
-                print_loss_total = 0
-                print('%s (%d %d%%) %.4f' % (timeSince(start, iter / n_iters),
-                                            iter, iter / n_iters * 100, print_loss_avg))
     
         print("Epoch {} finished with avg loss {}".format(epoch, total_loss / n_iters))
         # store average loss for this epoch
@@ -205,9 +199,6 @@ def train_model(encoder, decoder, training_pairs, validation_pairs, epochs, lang
         # test on validation set
         valid_loss = test_model(seq2seq, validation_pairs)
         valid_losses.append(valid_loss)
-    
-    # Save loss graph
-    # showPlot(epoch_losses, lang_idx)
 
     return seq2seq, epoch_losses, valid_losses, optimizer
 
@@ -262,14 +253,20 @@ def test_model(model, test_pairs, bleu=False):
         print("bleu score: {}\n".format(bleu_score))
     return avg_test_loss, bleu_score
 
-def showPlot(points, lang_idx):
-    plt.figure()
-    fig, ax = plt.subplots()
-    # this locator puts ticks at regular intervals
-    loc = ticker.MultipleLocator(base=0.2)
-    ax.yaxis.set_major_locator(loc)
-    plt.plot(points)
-    plt.savefig("loss_{}_{}.png".format(src_langs[lang_idx], tgt_langs[lang_idx]))
+def makePlot(data, title):
+
+    train_y = data[0]
+    valid_y = data[1]
+
+    x = [i for i in range(len(train_y))]
+
+    plt.plot(x, train_y, label = "Train")
+    plt.plot(x, valid_y, label = "Valid")
+    plt.title('Model {} Loss'.format(title))
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.show()
 
 def showTable(data, labels, title):
     fig, ax = plt.subplots()
@@ -287,7 +284,7 @@ if __name__ == "__main__":
     print("device: {}\n".format(device))
 
     # Train
-    
+
     for lang_idx in range(0, len(src_langs)):
         # Get current src and tgt language data
         d_train = IWSLT2017TransDataset(src_lang=src_langs[lang_idx], tgt_lang=tgt_langs[lang_idx], dataset_type='train')
@@ -304,10 +301,25 @@ if __name__ == "__main__":
         # Save model
         cwd = os.getcwd()
         model_path = os.path.join(cwd, 'models')
-        specific_model_path = os.path.join(model_path, '{}_{}'.format(src_langs[lang_idx], tgt_langs[lang_idx]))
-        os.makedirs(specific_model_path, exist_ok=True)
+        current_model_path = os.path.join(model_path, '{}_{}'.format(src_langs[lang_idx], tgt_langs[lang_idx]))
+        os.makedirs(current_model_path, exist_ok=True)
 
-        save(specific_model_path, num_epochs, trained_model, optimizer, train_losses, valid_losses)
+        save(current_model_path, num_epochs, trained_model, optimizer, train_losses, valid_losses)
+
+    # Plot training losses
+
+    if make_plots:
+        model_names = ['en_de', 'de_it', 'it_en']
+        plot_data = {}
+
+        for model in model_names:
+            model_dir = os.path.join('models', model)
+            with open(os.path.join(model_dir, 'states.json'), 'r') as f:
+                states_dict = json.load(f)
+            plot_data[model] = (states_dict['train_loss'], states_dict['valid_loss'])
+
+        for model in plot_data:
+            makePlot(plot_data[model], model)
 
     # Evaluate
 
