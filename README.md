@@ -35,6 +35,23 @@ For the Music task, we used the dataset
 
 For the translation task, due to memory and hardware constraints, we use a subset of the IWSLT dataset. We use the first 25000 examples of the training, first 5000 of the validation and 5000 of the test dataset.
 
+## Requirements
+* Python 3.9.5
+* PyTorch 1.9.1
+* Torchtext 0.10.1
+* Spacy 3.1.3
+* NLTK 3.6.2
+* Scipy 1.6.3
+* Matplotlib 3.4.2
+* tqdm 4.60.0
+
+## Data Prerequisites
+```bash
+python3 -m spacy download en_core_web_sm
+python3 -m spacy download de_core_news_sm
+python3 -m spacy download it_core_news_sm
+```
+
 ## Sequence to Sequence Learning using deep LSTM encoder decoder
 
 English to German task
