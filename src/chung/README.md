@@ -100,21 +100,34 @@ For other training arguments, refer to `train.py`.
 ## Results
 
 ### Music Sequence Modeling
-| JSB Chorales |
+| JSB Chorales | |
 |-|-|
 | ![JSB Loss](img/jsb_loss.jpg) | ![JSB NLL](img/jsb_nll.jpg) |
 
-| MuseData |
+| MuseData | |
 |-|-|
 | ![Muse Loss](img/muse_loss.jpg) | ![JSB NLL](img/muse_nll.jpg) |
 
-| Nottingham |
+| Nottingham | |
 |-|-|
 | ![Nottingham Loss](img/nott_loss.jpg) | ![Nottingham NLL](img/nott_nll.jpg) |
 
-| Piano-midi |
+| Piano-midi | |
 |-|-|
 | ![Piano Loss](img/piano_loss.jpg) | ![Piano NLL](img/piano_nll.jpg) |
+
+### Translation
+| English to German | |
+|-|-|
+| ![en_de Loss](img/en_de_loss.jpg) | ![en_de NLL](img/en_de_nll.jpg) |
+
+| German to Italian | |
+|-|-|
+| ![de_it Loss](img/de_it_loss.jpg) | ![de_it NLL](img/de_it_nll.jpg) |
+
+| Italian to English | |
+|-|-|
+| ![it_en Loss](img/it_en_loss.jpg) | ![it_en NLL](img/it_en_nll.jpg) |
 
 ## Data Sources
 For the music datasets (JSB, MuseData, Piano-midi, Nottingham), refer to the [TCN repository](https://github.com/locuslab/TCN/tree/master/TCN/poly_music). TCN, or Temporal Convolutional Networks, can be found in the work [An Empirical Evaluation of Generic Convolutional and Recurrent Networks for Sequence Modeling](https://arxiv.org/abs/1803.01271). You can cite their work with:
